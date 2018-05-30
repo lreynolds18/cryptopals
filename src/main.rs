@@ -4,7 +4,7 @@ mod binary_object;
 fn main() {
   // Test 1
   let hex1 = binary_object::BinaryObject::new(&"0123456789ABCDEF".to_string(), &"hex".to_string());
-  let test_hex1 = vec!(0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF);
+  let test_hex1 = vec!(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F);
   println!("Test 1 -- testing str_to_vec");
   println!("output = Vec<u8> {{01, 23, 45, 67, 89, AB, CD, EF}}");
   // println!("Result: {}, Type: {}", hex1.get_data() == test_hex1, hex1.get_data_type());
@@ -13,7 +13,7 @@ fn main() {
 
   // Test 2
   let hex2 = binary_object::BinaryObject::new(&"012".to_string(), &"hex".to_string());
-  let test_hex2 = vec!(0x01, 0x20);
+  let test_hex2 = vec!(0x00, 0x01, 0x02);
   println!("Test 2 -- odd str_to_vec"); 
   println!("output = Vec<u8> {{0x01, 0x20}}");
   println!("Result: {}", hex2.get_data() == test_hex2);

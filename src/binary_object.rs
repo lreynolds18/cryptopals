@@ -1,15 +1,6 @@
 pub struct BinaryObject {
   data: Vec<u8>,
   data_type: String,
-  ending: u8 // for hex, ending has two states: 0 if end on last 4 (even)
-                                             // 1 if end on first 4 (odd)
-              // for base64, ending has four states: 0 if end on last 6 
-                                                  // 1 if end on first 6
-                                                  // 2 if end on last 4 + first 2
-                                                  // 3 if end on last 6
-             // for hex, we are storing 4 bits for each char
-             // for base64, we are storing 6 bits for each char
-             // we are fitting those bits in a 8 bit object
 }
 
 impl BinaryObject {
@@ -22,25 +13,20 @@ impl BinaryObject {
    * Return: BinaryObject (w/ data, data_type, and ending)
    */
   pub fn new(str_inp: &str, data_type: &str) -> BinaryObject {
-    let (data, ending) = BinaryObject::build_data(str_inp, data_type);
 
     BinaryObject {
-      data: data,
+      data: BinaryObject::build_data(str_inp, data_type),
       data_type: String::from(data_type),
-      ending: ending
     }
   }
   
-
   /* set_data -- helper function to set self.data and self.data_type
    * Parameters: str_inp (&str) - input string, 
    *             data_type (&str) - data type of input string (hex or base64)
    * Return: void 
    */
   pub fn set_data(mut self, str_inp: &str, data_type: &str) {
-    let (data, ending) = BinaryObject::build_data(str_inp, data_type);
-    self.data = data;
-    self.ending = ending;
+    self.data = BinaryObject::build_data(str_inp, data_type);
     self.data_type = String::from(data_type);
   }
   
@@ -67,12 +53,10 @@ impl BinaryObject {
    *         ending (&str) - number from 0-3 that represents how much room is
    *                         left in the last element of self.data
    */
-  fn build_data(str_inp: &str, data_type: &str) -> (Vec<u8>, u8) {
+  fn build_data(str_inp: &str, data_type: &str) -> Vec<u8> {
     let mut output: Vec<u8> = Vec::new();
 
-    let mut temp: u8 = 0;
-    let mut ending: u8 = 0; 
-    let mut item: u8;
+    let mut item: u8 = 0;
 
     for c in str_inp.chars() {
       if data_type == "hex" {
@@ -83,88 +67,13 @@ impl BinaryObject {
               panic!("There was a problem with from_str_radix: {:?}", error)
             },
         };
-    
-        match ending {
-          0 => {
-            // temp has nothing in it so we want to push the digit to the left side
-            // i.e. so we have (00000000-11110000)
-            temp = item << 4;
-            ending = 1;
-          },
-          1 => {
-            // temp has digit on left side so we push to right side 
-            // (00000000-11111111)
-            temp |= item;
-            output.push(temp);
-            temp = 0;
-            ending = 0;
-          },
-          _ => {
-            panic!("Error: there was problem with adding Hex String to Vec");
-          }
-        }
       } else if data_type == "base64" {
         item = BinaryObject::base64char_to_u8(c);
-
-        // for base64, ending has four states: 0 if end on last 6 
-                                            // 1 if end on first 6
-                                            // 2 if end on last 4 + first 2
-                                            // 3 if end on last 6
-        // (first 6), (last 2 + first 4), (last 4 + first 2), (last 6)
-        match ending {
-          0 => {
-            // temp has nothing in it so we push the 6 bits all the way to left
-            // first 6
-            temp = item << 2; // (00111111 << 2) = 11111100
-            ending = 1;
-          },
-          1 => {
-            // temp has first 6 bits in it so we push 2 bits in temp and add to vector
-            // then we push 4 bits to temp 
-            // (last 2 + first 4)
-            temp |= (item & 0x30) >> 4; // 11111100 | ((00111111 & 00110000) >> 4) = 11111111
-            output.push(temp);
-            temp = (item & 0x0F) << 4; // (00111111 & 00001111) << 4 = 11110000
-            ending = 2;
-          },
-          2 => {
-            // temp has 4 bits in it so we push the first 4 digits to temp and add to vector
-            // then we push 2 bits to temp
-            // (last 4 + first 2)
-            temp |= (item & 0x3C) >> 2; // 11110000 | ((00111111 & 00111100) >> 2) = 11111111
-            output.push(temp);
-            temp = (item & 0x03) << 6; // (00111111 & 00000011) << 6 = 11000000
-            ending = 3;
-          },
-          3 => {
-            // ending has 2 bits in it so we add our new digit to temp and push to vector
-            // last 6
-            temp &= item; // 11000000 & 00111111 = 11111111
-            output.push(temp);
-            ending = 0;
-          },
-          _ => {
-            panic!("Error: there was problem with adding base64 String to Vec");
-          }
-        }
       }
+      output.push(item);
     }
 
-    if data_type == "hex" && ending == 1 { 
-      // if we have a odd number of hexidecimals then push to vec
-      // temp has 4 bits of information in it
-      // (11110000)
-      output.push(temp);
-    } else if data_type == "base64" && 
-      (ending == 1 || ending == 2 || ending == 3) {
-      // push to vector if temp has something left in it
-      // temp has either has 6 bits, 4 bits, or 2 bits of info in it
-      // depending on if it's 1, 2, 3 respectfully
-      // (11111100, 11110000, 11000000)
-      output.push(temp);
-    }
-
-    return (output, ending);
+    return output;
   }
 
   /* base64char_to_u8 -- helper function to convert base64 char to u8
@@ -237,19 +146,12 @@ impl BinaryObject {
    */
   pub fn to_string(self) -> String {
     let mut out = String::from("");
-    // let mut end: u8 = 0;
-    let len = self.data.len();
 
     for (i, item) in self.data.iter().enumerate() {
       if self.data_type == "hex" {
-        if i == len && self.ending == 1 {
-          out.push_str(&format!("{:x}", item >> 4)); 
-        } else {
-          out.push_str(&format!("{:x}", item));
-        }
+        out.push_str(&format!("{:x}", item));
       } else if self.data_type == "base64" {
-        // ignore for now
-        // TODO: implement base64 print
+        out.push(BinaryObject::base64u8_to_char(*item));
       }
     }
     return out;
