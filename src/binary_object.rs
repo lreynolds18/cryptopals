@@ -111,7 +111,7 @@ impl BinaryObject {
    */
   fn base64u8_to_char(u: u8) -> char {
     let c: char;
-    if u >= 0 && u <= 25 {
+    if u <= 25 {
       // A - Z
       c = (u + 65) as char;
     } else if u >= 26 && u <= 51 {
@@ -155,5 +155,9 @@ impl BinaryObject {
       }
     }
     return out;
+  }
+
+  pub fn change_base(mut self, new_base: &str) {
+
   }
 }
