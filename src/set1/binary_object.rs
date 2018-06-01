@@ -35,7 +35,7 @@ impl BinaryObject {
    * Return: self.data (Vec<u8>) - data in vector format
    */
   pub fn get_data(self) -> Vec<u8> {
-    return self.data;
+    self.data
   }
 
   /* get_data_type -- helper function to get self.data_type
@@ -73,7 +73,7 @@ impl BinaryObject {
       output.push(item);
     }
 
-    return output;
+    output
   }
 
   /* base64char_to_u8 -- helper function to convert base64 char to u8
@@ -102,7 +102,7 @@ impl BinaryObject {
     } else {
       panic!("Error: this is not a valid base64 digit");
     }
-    return u;
+    u
   }
 
   /* base64u8_to_char -- helper function to convert base64 u8 to char
@@ -110,26 +110,24 @@ impl BinaryObject {
    * Return: u (u8) - Character between A-Z, a-z, 0-9, +, /
    */
   fn base64u8_to_char(u: u8) -> char {
-    let c: char;
     if u <= 25 {
       // A - Z
-      c = (u + 65) as char;
+      (u + 65) as char
     } else if u >= 26 && u <= 51 {
       // a - z
-      c = (u + 71) as char;
+      (u + 71) as char
     } else if u >= 52 && u <= 61 {
       // 0 - 9
-      c = (u - 4) as char;
+      (u - 4) as char
     } else if u == 62 {
       // +
-      c = '+';
+      '+'
     } else if u == 63 {
       // /
-      c = '/';
+      '/'
     } else {
       panic!("Error: this is not a valid base64 digit");
     }
-    return c;
   }
 
   /* print -- helper function to print self.data Vec<u8>
@@ -137,7 +135,6 @@ impl BinaryObject {
    * Return: void
    */
   pub fn print(&self) {
-    // println!("{}", BinaryObject::to_string(self));
     println!("{}", self.to_string());
   }
 
@@ -148,7 +145,7 @@ impl BinaryObject {
   pub fn to_string(&self) -> String {
     let mut out = String::from("");
 
-    for item in self.data.iter() {
+    for item in &self.data {
       if self.data_type == "hex" {
         out.push_str(&format!("{:x}", item));
       } else if self.data_type == "base64" {
@@ -156,7 +153,7 @@ impl BinaryObject {
         // out.push(&set1::binary_object::BinaryObject::base64u8_to_char(*item));
       }
     }
-    return out;
+    out
   }
 
   /* to_string -- convert old_base to new_base
@@ -176,7 +173,7 @@ impl BinaryObject {
         if self.data.len() % 3 != 0 {
           panic!("Error: hex input does not fit nicely into base64.");
         }
-        for item in self.data.iter() {
+        for item in &self.data {
           if ending == 0 {
             // nothing in item
             temp = item << 2;
@@ -204,7 +201,7 @@ impl BinaryObject {
         if self.data.len() % 2 != 0 {
           panic!("Error: base64 does not fit nicely into hex.");
         }
-        for item in self.data.iter() {
+        for item in &self.data {
           if ending == 0 {
             // we want to add first 4 bits to self.data
             // we want to push the remaining 2 bits to temp
