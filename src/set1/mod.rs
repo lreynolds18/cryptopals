@@ -6,7 +6,7 @@ pub mod binary_object;
  * Parameters: vec_inp (&Vec<u8>) - vector to print
  * Return: void
  */
-pub fn hex_to_base64(hex_str: &str)  {
+pub fn hex_to_base64(_hex_str: &str)  {
   // let bin_obj = binary_object::BinaryObject::new(&hex_str, &"hex".to_string());
 
   // bin_obj.change_base(&"base64".to_string());
