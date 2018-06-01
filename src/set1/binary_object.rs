@@ -3,6 +3,8 @@ pub struct BinaryObject {
   data_type: String,
 }
 
+// TODO: ownership? who owns what and why
+// -- get_data method is a problem
 impl BinaryObject {
 
   /* new -- constructor for binary_object 
@@ -13,7 +15,6 @@ impl BinaryObject {
    * Return: BinaryObject (w/ data, data_type, and ending)
    */
   pub fn new(str_inp: &str, data_type: &str) -> BinaryObject {
-
     BinaryObject {
       data: BinaryObject::build_data(str_inp, data_type),
       data_type: String::from(data_type),
@@ -50,60 +51,69 @@ impl BinaryObject {
    * Parameters: str_inp (&str) - input string, 
    *             data_type (&str) - data type of input string (hex or base64)
    * Return: self.data (Vec<u8>) - vector representation of our str_inp
-   *         ending (&str) - number from 0-3 that represents how much room is
-   *                         left in the last element of self.data
    */
   fn build_data(str_inp: &str, data_type: &str) -> Vec<u8> {
-    let mut output: Vec<u8> = Vec::new();
-
-    let mut item: u8 = 0;
+    let mut data: Vec<u8> = Vec::new();
 
     for c in str_inp.chars() {
-      if data_type == "hex" {
-        // convert hex decimal char (0-9, A-F) to u8 (00000000-00001111)
-        item = match u8::from_str_radix(&c.to_string(), 16) {
-            Ok(result) => result,
-            Err(error) => {
-              panic!("There was a problem with from_str_radix: {:?}", error)
-            },
-        };
-      } else if data_type == "base64" {
-        item = BinaryObject::base64char_to_u8(c);
-      }
-      output.push(item);
+      data.push(BinaryObject::char_to_u8(c, data_type));
     }
-
-    output
+    data
   }
 
-  /* base64char_to_u8 -- helper function to convert base64 char to u8
-   * Parameters: c (char) - Character between A-Z, a-z, 0-9, +, /
-   * Return: u (u8) - binary representation of character (000000-111111)  
+  /* char_to_u8 -- helper function to convert (hex/base64) char to u8
+   *               (note: we don't want self here because we want to be able to use this 
+   *               outside of this struct / want to use this in constructor)
+   * Parameters: c (char) - Character between (0-9, A-F, a-f) or (A-Z, a-z, 0-9, +, /)
+   *             data_type (&str) - base of the char to convert to 
+   * Return: u (u8) - binary representation of character (0000-1111) or (000000-111111)
    */
-  fn base64char_to_u8(c: char) -> u8 {
+  fn char_to_u8(c: char, data_type: &str) -> u8 {
     let u = c as u8;
-    match u {
-      65...90 => { u - 65 }, // A - Z 
-      97...122 => { u - 71 }, // a - z
-      48...57 => { u + 4 }, // 0 - 9
-      43 => { 62 }, // +
-      47 => { 63 }, // /
-      _ => { panic!("Error: this is not a valid base64 digit") }
+    if data_type == "hex" {
+      match u {
+        48...57 => { u - 48 }, // 0 - 9
+        97...102 => { u - 87 }, // a - f
+        65...70 => { u - 55 }, // A - F
+        _ => { panic!("Error: this is not a valid hex digit") }
+      }
+    } else {
+    // } else if data_type == "base64" {
+      match u {
+        65...90 => { u - 65 }, // A - Z 
+        97...122 => { u - 71 }, // a - z
+        48...57 => { u + 4 }, // 0 - 9
+        43 => { 62 }, // +
+        47 => { 63 }, // /
+        _ => { panic!("Error: this is not a valid base64 digit") }
+      }
     }
   }
 
-  /* base64u8_to_char -- helper function to convert base64 u8 to char
-   * Parameters: u (u8) - binary representation of character (000000-111111)
-   * Return: u (u8) - Character between A-Z, a-z, 0-9, +, /
+  /* u8_to_char -- helper function to convert (hex/base64) u8 to char
+   *               (note: we don't want self here because we want to be able to use this 
+   *               outside of this struct / want to use this in constructor)
+   * Parameters: u (u8) - binary representation of character (0000-1111) or (000000-111111)
+   *             data_type (&str) - base of the char to convert to 
+   * Return: u (u8) - Character between (0-9, a-f) or (A-Z, a-z, 0-9, +, /)
    */
-  fn base64u8_to_char(u: u8) -> char {
-    match u {
-      0...25 => { (u + 65) as char }, // A - Z
-      26...51 => { (u + 71) as char }, // a - z
-      52...61 => { (u - 4) as char }, // 0 - 9
-      62 => { '+' }, // +
-      63 => { '/' }, // /
-      _ => { panic!("Error: this is not a valid base64 digit") }
+  fn u8_to_char(u: u8, data_type: &str) -> char {
+    if data_type == "hex" {
+      match u {
+        0...9 => { (u + 48) as char }, // 0 - 9
+        10...15 => { (u + 87) as char }, // a - f
+        _ => { panic!("Error: this is not a valid hex digit") }
+      }
+    } else {
+    // } else if data_type == "base64" {
+      match u {
+        0...25 => { (u + 65) as char }, // A - Z
+        26...51 => { (u + 71) as char }, // a - z
+        52...61 => { (u - 4) as char }, // 0 - 9
+        62 => { '+' }, // +
+        63 => { '/' }, // /
+        _ => { panic!("Error: this is not a valid base64 digit") }
+      }
     }
   }
 
@@ -123,18 +133,13 @@ impl BinaryObject {
     let mut out = String::from("");
 
     for item in &self.data {
-      if self.data_type == "hex" {
-        out.push_str(&format!("{:x}", item));
-      } else if self.data_type == "base64" {
-        out.push(BinaryObject::base64u8_to_char(*item));
-        // out.push(&set1::binary_object::BinaryObject::base64u8_to_char(*item));
-      }
+      out.push(BinaryObject::u8_to_char(*item, self.data_type.as_str()));
     }
     out
   }
 
-  /* to_string -- convert old_base to new_base
-   * concurrently handles hex -> base64 and base64 -> hex
+  /* change_base -- convert old_base to new_base
+   * currently handles hex -> base64 and base64 -> hex
    * changes self.data and self.data_type in struct
    * Parameters: new_base (&str) - New base to convert old base to
    * Return: void 
