@@ -3,7 +3,6 @@ pub struct BinaryObject {
   data_type: String,
 }
 
-// TODO: Traits????
 impl BinaryObject {
 
   /* new -- constructor for binary_object 
