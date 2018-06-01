@@ -3,6 +3,7 @@ pub struct BinaryObject {
   data_type: String,
 }
 
+// TODO: Traits????
 impl BinaryObject {
 
   /* new -- constructor for binary_object 
@@ -81,6 +82,7 @@ impl BinaryObject {
    * Return: u (u8) - binary representation of character (000000-111111)  
    */
   fn base64char_to_u8(c: char) -> u8 {
+    // TODO: match statement? / simplify code even more? take u8 as parameter?
     let mut u = c as u8;
     if u >= 65 && u <= 90 {
       // A - Z
@@ -110,6 +112,7 @@ impl BinaryObject {
    * Return: u (u8) - Character between A-Z, a-z, 0-9, +, /
    */
   fn base64u8_to_char(u: u8) -> char {
+    // TODO: match statement?
     if u <= 25 {
       // A - Z
       (u + 65) as char
@@ -163,6 +166,7 @@ impl BinaryObject {
    * Return: void 
    */
   pub fn change_base(&mut self, new_base: &str) {
+    // TODO: make dry, lots of repetition
     if self.data_type != new_base {
       let mut output: Vec<u8> = Vec::new();
       let mut temp: u8 = 0x00;
