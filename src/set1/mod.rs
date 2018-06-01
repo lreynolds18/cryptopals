@@ -1,4 +1,4 @@
-
+pub mod binary_object;
 
 /* hex_to_base64 -- Set 1, Challenge 1
  * converts hex to base64
@@ -6,7 +6,14 @@
  * Parameters: vec_inp (&Vec<u8>) - vector to print
  * Return: void
  */
-pub fn hex_to_base64(hex_str: &str) {
+pub fn hex_to_base64(hex_str: &str)  {
+  // let bin_obj = binary_object::BinaryObject::new(&hex_str, &"hex".to_string());
+
+  // bin_obj.change_base(&"base64".to_string());
+
+  // return &bin_obj.to_string()[..];
+  
+  
   // let hex_vec: Vec<u8> = hexstr_to_vec(hex_str); 
 
   /*

@@ -25,7 +25,7 @@ impl BinaryObject {
    *             data_type (&str) - data type of input string (hex or base64)
    * Return: void 
    */
-  pub fn set_data(mut self, str_inp: &str, data_type: &str) {
+  pub fn set_data(&mut self, str_inp: &str, data_type: &str) {
     self.data = BinaryObject::build_data(str_inp, data_type);
     self.data_type = String::from(data_type);
   }
@@ -136,28 +136,63 @@ impl BinaryObject {
    * Parameters: void 
    * Return: void
    */
-  pub fn print(self) {
-    println!("{}", BinaryObject::to_string(self));
+  pub fn print(&self) {
+    // println!("{}", BinaryObject::to_string(self));
+    println!("{}", self.to_string());
   }
 
   /* to_string -- helper function to convert self.data Vec<u8> to string
    * Parameters: void 
    * Return: out (&str) - Hex/Base64 data in string format 
    */
-  pub fn to_string(self) -> String {
+  pub fn to_string(&self) -> String {
     let mut out = String::from("");
 
-    for (i, item) in self.data.iter().enumerate() {
+    for item in self.data.iter() {
       if self.data_type == "hex" {
         out.push_str(&format!("{:x}", item));
       } else if self.data_type == "base64" {
         out.push(BinaryObject::base64u8_to_char(*item));
+        // out.push(&set1::binary_object::BinaryObject::base64u8_to_char(*item));
       }
     }
     return out;
   }
 
-  pub fn change_base(mut self, new_base: &str) {
+  pub fn change_base(&mut self, new_base: &str) {
+    if self.data_type != new_base {
+      let mut output: Vec<u8> = Vec::new();
 
+      if self.data_type == "hex" && new_base == "base64" {
+        // hex -> base64
+        if self.data.len() % 3 != 0 {
+          panic!("Error: hex input does not fit nicely into base64.");
+        }
+        let mut temp: u8 = 0x00;
+        let mut ending: u8 = 0;
+        for item in self.data.iter() {
+          if ending == 0 {
+            // nothing in item
+            temp = item << 2;
+            ending = 1;
+          } else if ending == 1 {
+            temp |= (item & 0x0C) >> 2;
+            output.push(temp);
+            temp = (item & 0x03) << 4;
+            ending = 2;
+          } else {
+            temp |= item;
+            output.push(temp);
+            ending = 0;
+          }
+        }
+      } else if self.data_type == "base64" && new_base == "hex" {
+        // base64 -> hex
+        // TODO
+
+      }
+      self.data = output;
+      self.data_type = new_base.to_string();
+    }
   }
 }
