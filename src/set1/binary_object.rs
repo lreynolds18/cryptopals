@@ -42,9 +42,9 @@ impl BinaryObject {
    * Parameters: void
    * Return: self.data_type (&str) - data_typ 
    */
-  // pub fn get_data_type(self) -> &str {
-  //   return &self.data_type[..];
-  // }
+  pub fn get_data_type(&self) -> &str {
+    self.data_type.as_str()
+  }
 
   /* build_data -- helper function to build self.data
    * Parameters: str_inp (&str) - input string, 
@@ -81,29 +81,15 @@ impl BinaryObject {
    * Return: u (u8) - binary representation of character (000000-111111)  
    */
   fn base64char_to_u8(c: char) -> u8 {
-    // TODO: match statement? / simplify code even more? take u8 as parameter?
-    let mut u = c as u8;
-    if u >= 65 && u <= 90 {
-      // A - Z
-      u -= 65;
-    } else if u >= 97 && u <= 122 {
-      // a - z
-      u -= 71; // a = 26 in base64 so 97-26=71
-               // z = 51 in base64 so 122-71=51
-    } else if u >= 48 && u <= 57 {
-      // 0-9
-      u += 4; // 0 = 52 in base64 so 48+4=52
-              // 9 = 61 in base64 so 57+4=61
-    } else if u == 43 {
-      // +
-      u = 62;
-    } else if u == 47 {
-      // /
-      u = 63;
-    } else {
-      panic!("Error: this is not a valid base64 digit");
+    let u = c as u8;
+    match u {
+      65...90 => { u - 65 }, // A - Z 
+      97...122 => { u - 71 }, // a - z
+      48...57 => { u + 4 }, // 0 - 9
+      43 => { 62 }, // +
+      47 => { 63 }, // /
+      _ => { panic!("Error: this is not a valid base64 digit") }
     }
-    u
   }
 
   /* base64u8_to_char -- helper function to convert base64 u8 to char
@@ -111,24 +97,13 @@ impl BinaryObject {
    * Return: u (u8) - Character between A-Z, a-z, 0-9, +, /
    */
   fn base64u8_to_char(u: u8) -> char {
-    // TODO: match statement?
-    if u <= 25 {
-      // A - Z
-      (u + 65) as char
-    } else if u >= 26 && u <= 51 {
-      // a - z
-      (u + 71) as char
-    } else if u >= 52 && u <= 61 {
-      // 0 - 9
-      (u - 4) as char
-    } else if u == 62 {
-      // +
-      '+'
-    } else if u == 63 {
-      // /
-      '/'
-    } else {
-      panic!("Error: this is not a valid base64 digit");
+    match u {
+      0...25 => { (u + 65) as char }, // A - Z
+      26...51 => { (u + 71) as char }, // a - z
+      52...61 => { (u - 4) as char }, // 0 - 9
+      62 => { '+' }, // +
+      63 => { '/' }, // /
+      _ => { panic!("Error: this is not a valid base64 digit") }
     }
   }
 
