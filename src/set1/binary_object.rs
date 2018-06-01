@@ -145,66 +145,67 @@ impl BinaryObject {
    * Return: void 
    */
   pub fn change_base(&mut self, new_base: &str) {
-    // TODO: make dry, lots of repetition
     if self.data_type != new_base {
+      // if converting to base64, we add elements to the vec by 3 hex values
+      // 00001111, 00001122, 00002222 -> 00111111, 00222222
+      if new_base == "base64" && self.data.len() % 3 != 0 {
+        panic!("Error: hex input does not fit nicely into base64.");
+      }
+
+      // if converting to hex, we add elements to the vec by 2 base64 values
+      // 00111122 00223333 -> 00001111, 00002222, 00003333
+      if new_base == "hex" && self.data.len() % 2 != 0 {
+        panic!("Error: base64 does not fit nicely into hex.");
+      }
+
       let mut output: Vec<u8> = Vec::new();
       let mut temp: u8 = 0x00;
       let mut ending: u8 = 0;
 
-      if self.data_type == "hex" && new_base == "base64" {
+      for item in &self.data {
         // hex -> base64
-        if self.data.len() % 3 != 0 {
-          panic!("Error: hex input does not fit nicely into base64.");
+        if new_base=="base64" && ending == 0 {
+          // nothing in item
+          temp = item << 2;
+          // temp now has 4 bits in it (00****00)
+          ending = 1;
+        } else if new_base=="base64" && ending == 1 {
+          temp |= (item & 0x0C) >> 2;
+          // fill first 2 bits in temp and push
+          // temp has 6 bits (00******)
+          output.push(temp);
+          temp = (item & 0x03) << 4;
+          // push remaining two bits in temp
+          // temp has 2 bits (00**0000)
+          ending = 2;
+        } else if new_base=="base64" && ending == 2{
+          temp |= item;
+          // temp has 6 bits (00******)
+          output.push(temp);
+          ending = 0;
+          // temp now has 0 bits (00000000)
         }
-        for item in &self.data {
-          if ending == 0 {
-            // nothing in item
-            temp = item << 2;
-            // temp now has 4 bits in it (00****00)
-            ending = 1;
-          } else if ending == 1 {
-            temp |= (item & 0x0C) >> 2;
-            // fill first 2 bits in temp and push
-            // temp has 6 bits (00******)
-            output.push(temp);
-            temp = (item & 0x03) << 4;
-            // push remaining two bits in temp
-            // temp has 2 bits (00**0000)
-            ending = 2;
-          } else {
-            temp |= item;
-            // temp has 6 bits (00******)
-            output.push(temp);
-            ending = 0;
-            // temp now has 0 bits (00000000)
-          }
-        }
-      } else if self.data_type == "base64" && new_base == "hex" {
+
         // base64 -> hex
-        if self.data.len() % 2 != 0 {
-          panic!("Error: base64 does not fit nicely into hex.");
-        }
-        for item in &self.data {
-          if ending == 0 {
-            // we want to add first 4 bits to self.data
-            // we want to push the remaining 2 bits to temp
-            temp = (item & 0x3C) >> 2;
-            // temp has 4 bits (0000****)
-            output.push(temp);
-            temp = (item & 0x03) << 2; 
-            // temp has 2 bits (0000**00)
-            ending = 1;
-          } else if ending == 1 {
-            // we want to add first 2 bits to temp and then push to self.data
-            // we want to add the remaining 4 bits to temp and then push to self.data
-            temp |= (item & 0x30) >> 4;
-            // temp has 4 bits (0000****)
-            output.push(temp);
-            temp = item & 0x0F;
-            output.push(temp);
-            // temp has 0 bits (00000000)
-            ending = 0;
-          }
+        else if new_base == "hex" && ending == 0 {
+          // we want to add first 4 bits to self.data
+          // we want to push the remaining 2 bits to temp
+          temp = (item & 0x3C) >> 2;
+          // temp has 4 bits (0000****)
+          output.push(temp);
+          temp = (item & 0x03) << 2; 
+          // temp has 2 bits (0000**00)
+          ending = 1;
+        } else if new_base == "hex" && ending == 1 {
+          // we want to add first 2 bits to temp and then push to self.data
+          // we want to add the remaining 4 bits to temp and then push to self.data
+          temp |= (item & 0x30) >> 4;
+          // temp has 4 bits (0000****)
+          output.push(temp);
+          temp = item & 0x0F;
+          output.push(temp);
+          // temp has 0 bits (00000000)
+          ending = 0;
         }
       }
       self.data = output;
