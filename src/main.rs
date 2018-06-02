@@ -60,4 +60,12 @@ fn main() {
                                       &"686974207468652062756c6c277320657965".to_string(), &"hex".to_string()));
   println!();
 
+  // Test 8
+  println!("Test 8 - Test Single-byte XOR cipher");
+  println!("Input: 1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736");
+  let (ans_message, ans_key) = set1::single_byte_xor_cipher(&"1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736".to_string(), &"hex".to_string());
+  println!("Ans message: {}", ans_message);
+  println!("Ans key: {}", ans_key);
+  println!();
+
 }
