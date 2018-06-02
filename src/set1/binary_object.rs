@@ -1,6 +1,32 @@
+use std::ops;
+
 pub struct BinaryObject {
   data: Vec<u8>,
   data_type: String,
+}
+
+impl ops::BitXor for BinaryObject {
+    type Output = Self;
+
+    fn bitxor(self, rhs: Self) -> Self {
+      if self.data_type != rhs.data_type {
+        panic!("Error: Binary Objects are not the same type.  LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
+      }
+  
+      if self.data.len() != rhs.data.len() {
+        panic!("Error: Binary Objects are not the same length");
+      }
+
+      let data: Vec<u8> = self.data.iter()
+                                   .zip(rhs.data.iter())
+                                   .map(|(l, r)| l ^ r)
+                                   .collect();
+      
+      BinaryObject {
+        data: data,
+        data_type: self.data_type
+      }
+    }
 }
 
 // TODO: ownership? who owns what and why
