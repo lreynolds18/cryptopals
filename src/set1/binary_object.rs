@@ -5,28 +5,40 @@ pub struct BinaryObject {
   data_type: String,
 }
 
+// XOR implementation for BinaryObject ^ BinaryObject = BinaryObject
+// handles repeating XOR so if lhs is bigger than rhs
+// it will repeatable XOR the rhs on the lhs
 impl ops::BitXor for BinaryObject {
-    type Output = Self;
+  type Output = Self;
 
-    fn bitxor(self, rhs: Self) -> Self {
-      if self.data_type != rhs.data_type {
-        panic!("Error: Binary Objects are not the same type.  LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
-      }
+  fn bitxor(self, rhs: Self) -> Self {
+    if self.data_type != rhs.data_type {
+      panic!("Error: Binary Objects are not the same type.  LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
+    }
   
-      if self.data.len() != rhs.data.len() {
-        panic!("Error: Binary Objects are not the same length");
-      }
-
-      let data: Vec<u8> = self.data.iter()
-                                   .zip(rhs.data.iter())
-                                   .map(|(l, r)| l ^ r)
-                                   .collect();
-      
+    if self.data.len() == rhs.data.len() {
       BinaryObject {
-        data: data,
+        data: self.data.iter()
+                       .zip(rhs.data.iter())
+                       .map(|(l, r)| l ^ r)
+                       .collect(),
         data_type: self.data_type
       }
+    } else if self.data.len() % rhs.data.len() == 0 {
+      let mut out: Vec<u8> = Vec::new();
+      let rhs_len: i64 = rhs.data.len() as i64;
+        
+      for (i, item) in self.data.iter().enumerate() {
+        out.push(item ^ rhs.data[((i as i64) % rhs_len) as usize]);
+      }
+      BinaryObject {
+        data: out,
+        data_type: self.data_type
+      }
+    } else {
+      panic!("Error: Binary Objects cannot be XOR'd against each other");
     }
+  }
 }
 
 // TODO: ownership? who owns what and why
@@ -156,10 +168,71 @@ impl BinaryObject {
    * Return: out (&str) - Hex/Base64 data in string format 
    */
   pub fn to_string(&self) -> String {
-    let mut out = String::from("");
+    let mut out = String::new();
 
     for item in &self.data {
       out.push(BinaryObject::u8_to_char(*item, self.data_type.as_str()));
+    }
+    out
+  }
+
+  /* to_string -- helper function to convert self.data Vec<u8> to ASCII string
+   * Parameters: void 
+   * Return: out (&str) - Hex/Base64 data in string format 
+   */
+  pub fn to_ascii_string(&self) -> String {
+    let mut out = String::new();
+    let mut tmp: u8 = 0;
+    let mut ending = 0;
+  
+    // TODO: refactor ending out?  use index instead -- i%2==1 i&2==0
+    if self.data_type == "hex" && self.data.len() % 2 == 0 {
+      for hex in &self.data {
+        if ending == 0 {
+          tmp = hex << 4;
+          ending = 1;
+        } else if ending == 1 {
+          tmp |= hex;
+          out.push(tmp as char);
+          ending = 0;
+        } 
+      }
+    } else if self.data_type == "base64" && self.data.len() % 4 == 0 {
+      for base64 in &self.data {
+        if ending == 0 {
+          // tmp starts as 0x00000000
+          tmp = base64 << 2;
+          // tmp is now 0x******00
+          ending = 1;
+        } else if ending == 1 {
+          // tmp starts as 0x******00
+          tmp |= (base64 & 0x30) >> 4;
+          // tmp is now 0x********
+          out.push(tmp as char);
+          // tmp is now 0x00000000
+          tmp = (base64 & 0x0F) << 2;
+          // tmp is now 0x****0000
+          ending = 2;
+        } else if ending == 2 {
+          // tmp start at 0x****0000
+          tmp |= (base64 & 0x3C) >> 2;
+          // tmp is now 0x********
+          out.push(tmp as char);
+          // tmp is now 0x00000000
+          tmp = (base64 & 0x03) << 6;
+          // tmp is now 0x**000000
+          ending = 3;
+        } else if ending == 3 {
+          // tmp starts as 0x**000000
+          tmp |= base64;
+          // tmp is now 0x********
+          out.push(tmp as char);
+          // tmp is now 0x00000000
+          ending = 0;
+        }
+      }
+    } else {
+      panic!("Error: the data doesn't fit nicely into an ASCII string");
     }
     out
   }
