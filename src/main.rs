@@ -64,8 +64,26 @@ fn main() {
   println!("Test 8 - Test Single-byte XOR cipher");
   println!("Input: 1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736");
   let (ans_message, ans_key) = set1::single_byte_xor_cipher(&"1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736".to_string(), &"hex".to_string());
-  println!("Ans message: {}", ans_message);
-  println!("Ans key: {}", ans_key);
+  println!("Ans message: ?");
+  println!("Res message: {}", ans_message);
+  println!("Ans key: ?");
+  println!("Res key: {}", ans_key); 
   println!();
+
+  // Test 9
+  println!("Test 9 - Test Detect single-character XOR");
+  println!("Input File: set1challenge4.txt");
+  println!("Ans: ?");
+  println!("Res: {}", set1::detect_single_character_xor("./set1challenge4.txt"));
+  println!();
+
+  // Test 10
+  println!("Test 10 - Test repeating-key XOR");
+  println!("Input String: Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal");
+  println!("Input key: ICE");
+  println!("Ans: 0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272\na282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f");
+  println!("Res: {}", set1::repeating_key_xor_encrypt(&"Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal".to_string(), &"ascii".to_string(), &"ICE".to_string(), &"ascii".to_string()));
+  println!();
+
 
 }
