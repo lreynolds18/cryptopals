@@ -1,4 +1,4 @@
-pub mod binary_object;
+pub mod storage;
 
 /* hex_to_base64 -- Set 1, Challenge 1
  * http://cryptopals.com/sets/1/challenges/1
@@ -8,7 +8,7 @@ pub mod binary_object;
  * Return: String - output of converting hex string to base64 string
  */
 pub fn hex_to_base64(hex_str: &str) -> String {
-  let mut bin_obj = binary_object::BinaryObject::new(&hex_str, &"hex".to_string());
+  let mut bin_obj = storage::Storage::new(&hex_str, &"hex".to_string());
 
   bin_obj.change_base(&"base64".to_string());
 
@@ -25,8 +25,8 @@ pub fn hex_to_base64(hex_str: &str) -> String {
  * Return: String - output of xor operation on lhs_str and rhs_str 
  */
 pub fn fixed_xor(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) -> String {
-  let lhs = binary_object::BinaryObject::new(&lhs_str, &lhs_type);
-  let rhs = binary_object::BinaryObject::new(&rhs_str, &rhs_type);
+  let lhs = storage::Storage::new(&lhs_str, &lhs_type);
+  let rhs = storage::Storage::new(&rhs_str, &rhs_type);
 
   let ans = lhs ^ rhs;
 

@@ -1,10 +1,10 @@
 pub mod set1;
 
-use set1::binary_object;
+use set1::storage;
 
 fn main() {
   // Test 1
-  let hex1 = binary_object::BinaryObject::new(&"0123456789ABCDEF".to_string(), &"hex".to_string());
+  let hex1 = storage::Storage::new(&"0123456789ABCDEF".to_string(), &"hex".to_string());
   let test_hex1 = vec!(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F);
   println!("Test 1 -- testing str_to_vec");
   println!("output = Vec<u8> {{01, 23, 45, 67, 89, AB, CD, EF}}");
@@ -13,7 +13,7 @@ fn main() {
   println!();
 
   // Test 2
-  let hex2 = binary_object::BinaryObject::new(&"012".to_string(), &"hex".to_string());
+  let hex2 = storage::Storage::new(&"012".to_string(), &"hex".to_string());
   let test_hex2 = vec!(0x00, 0x01, 0x02);
   println!("Test 2 -- odd str_to_vec"); 
   println!("output = Vec<u8> {{0x01, 0x20}}");
@@ -21,7 +21,7 @@ fn main() {
   println!();
   
   // Test 3
-  let mut hex3 = binary_object::BinaryObject::new(&"49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d".to_string(), &"hex".to_string());
+  let mut hex3 = storage::Storage::new(&"49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d".to_string(), &"hex".to_string());
   println!("Test 3 -- testing str_to_vec and print_hex_vec");
   println!("Ans: 49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d");
   print!("Res: ");

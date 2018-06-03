@@ -1,23 +1,23 @@
 use std::ops;
 
-pub struct BinaryObject {
+pub struct Storage {
   data: Vec<u8>,
   data_type: String,
 }
 
-// XOR implementation for BinaryObject ^ BinaryObject = BinaryObject
+// XOR implementation for Storage ^ Storage = Storage
 // handles repeating XOR so if lhs is bigger than rhs
 // it will repeatable XOR the rhs on the lhs
-impl ops::BitXor for BinaryObject {
+impl ops::BitXor for Storage {
   type Output = Self;
 
   fn bitxor(self, rhs: Self) -> Self {
     if self.data_type != rhs.data_type {
-      panic!("Error: Binary Objects are not the same type.  LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
+      panic!("Error: Storage are not the same type.  LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
     }
   
     if self.data.len() == rhs.data.len() {
-      BinaryObject {
+      Storage {
         data: self.data.iter()
                        .zip(rhs.data.iter())
                        .map(|(l, r)| l ^ r)
@@ -31,30 +31,30 @@ impl ops::BitXor for BinaryObject {
       for (i, item) in self.data.iter().enumerate() {
         out.push(item ^ rhs.data[((i as i64) % rhs_len) as usize]);
       }
-      BinaryObject {
+      Storage {
         data: out,
         data_type: self.data_type
       }
     } else {
-      panic!("Error: Binary Objects cannot be XOR'd against each other");
+      panic!("Error: Storage cannot be XOR'd against each other");
     }
   }
 }
 
 // TODO: ownership? who owns what and why
 // -- get_data method is a problem
-impl BinaryObject {
+impl Storage {
 
-  /* new -- constructor for binary_object 
+  /* new -- constructor for storage 
    * converts string to vec<u8>
    * assuming str_inp is in it's respected format of data_type (hex / base64)
    * Parameters: str_inp (&str) - input string, 
    *             data_type (&str) - data type of input string (hex or base64)
-   * Return: BinaryObject (w/ data, data_type, and ending)
+   * Return: Storage (w/ data, data_type, and ending)
    */
-  pub fn new(str_inp: &str, data_type: &str) -> BinaryObject {
-    BinaryObject {
-      data: BinaryObject::build_data(str_inp, data_type),
+  pub fn new(str_inp: &str, data_type: &str) -> Storage {
+    Storage {
+      data: Storage::build_data(str_inp, data_type),
       data_type: String::from(data_type),
     }
   }
@@ -65,7 +65,7 @@ impl BinaryObject {
    * Return: void 
    */
   pub fn set_data(&mut self, str_inp: &str, data_type: &str) {
-    self.data = BinaryObject::build_data(str_inp, data_type);
+    self.data = Storage::build_data(str_inp, data_type);
     self.data_type = String::from(data_type);
   }
   
@@ -94,7 +94,7 @@ impl BinaryObject {
     let mut data: Vec<u8> = Vec::new();
 
     for c in str_inp.chars() {
-      data.push(BinaryObject::char_to_u8(c, data_type));
+      data.push(Storage::char_to_u8(c, data_type));
     }
     data
   }
@@ -171,7 +171,7 @@ impl BinaryObject {
     let mut out = String::new();
 
     for item in &self.data {
-      out.push(BinaryObject::u8_to_char(*item, self.data_type.as_str()));
+      out.push(Storage::u8_to_char(*item, self.data_type.as_str()));
     }
     out
   }
