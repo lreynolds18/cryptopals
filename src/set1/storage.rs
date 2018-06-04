@@ -24,7 +24,7 @@ impl ops::BitXor for Storage {
                        .collect(),
         data_type: self.data_type
       }
-    } else if self.data.len() % rhs.data.len() == 0 {
+    } else if self.data.len() > rhs.data.len() {
       let mut out: Vec<u8> = Vec::new();
       let rhs_len: i64 = rhs.data.len() as i64;
         
@@ -35,8 +35,8 @@ impl ops::BitXor for Storage {
         data: out,
         data_type: self.data_type
       }
-    } else {
-      panic!("Error: Storage cannot be XOR'd against each other");
+    } else  {
+      panic!("Error: Storage cannot be XOR'd against each other.  LHS length is {}, RHS length is {}", self.data.len(), rhs.data.len());
     }
   }
 }
@@ -112,14 +112,15 @@ impl Storage {
   fn char_to_u8(c: char, data_type: &str) -> u8 {
     let u = c as u8;
     if data_type == "hex" {
+      // HEX
       match u {
         48...57 => { u - 48 }, // 0 - 9
         97...102 => { u - 87 }, // a - f
         65...70 => { u - 55 }, // A - F
         _ => { panic!("Error: this is not a valid hex digit") }
       }
-    } else {
-    // } else if data_type == "base64" {
+    } else if data_type == "base64" {
+      // BASE64
       match u {
         65...90 => { u - 65 }, // A - Z 
         97...122 => { u - 71 }, // a - z
@@ -128,6 +129,9 @@ impl Storage {
         47 => { 63 }, // /
         _ => { panic!("Error: this is not a valid base64 digit") }
       }
+    } else {
+      // ASCII
+      u
     }
   }
 
@@ -140,13 +144,14 @@ impl Storage {
    */
   fn u8_to_char(u: u8, data_type: &str) -> char {
     if data_type == "hex" {
+      // HEX
       match u {
         0...9 => { (u + 48) as char }, // 0 - 9
         10...15 => { (u + 87) as char }, // a - f
         _ => { panic!("Error: this is not a valid hex digit") }
       }
-    } else {
-    // } else if data_type == "base64" {
+    } else if data_type == "base64" {
+      // BASE64
       match u {
         0...25 => { (u + 65) as char }, // A - Z
         26...51 => { (u + 71) as char }, // a - z
@@ -155,6 +160,9 @@ impl Storage {
         63 => { '/' }, // /
         _ => { panic!("Error: this is not a valid base64 digit") }
       }
+    } else {
+      // ASCII
+      u as char
     }
   }
 
@@ -186,6 +194,10 @@ impl Storage {
    * Return: void 
    */
   pub fn change_base(&mut self, new_base: &str) {
+    // TODO: Is this a good idea???????????
+    // YES: THEN REFACTOR
+    // NO: COME UP W/ A NEW SOLUTION
+
     if self.data_type != new_base {
 
       let mut output: Vec<u8> = Vec::new();

@@ -8,11 +8,11 @@ pub mod storage;
  * Return: String - output of converting hex string to base64 string
  */
 pub fn hex_to_base64(hex_str: &str) -> String {
-  let mut bin_obj = storage::Storage::new(&hex_str, &"hex".to_string());
+  let mut s = storage::Storage::new(&hex_str, &"hex".to_string());
 
-  bin_obj.change_base(&"base64".to_string());
+  s.change_base(&"base64".to_string());
 
-  bin_obj.to_string()
+  s.to_string()
 }
 
 /* fixed_xor -- Set 1, Challenge 2
@@ -65,8 +65,15 @@ pub fn detect_single_character_xor(filename: &str) -> (char) {
  * Return: String - Encrypted message
  */
 pub fn repeating_key_xor_encrypt(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) -> String {
+  // TODO: handle \n -- newlines
+  let lhs = storage::Storage::new(&lhs_str, &lhs_type);
+  let rhs = storage::Storage::new(&rhs_str, &rhs_type);
+  
+  let mut ans = lhs ^ rhs;
 
-  "".to_string()
+  ans.change_base(&"hex".to_string());
+
+  ans.to_string()
 }
 
 
