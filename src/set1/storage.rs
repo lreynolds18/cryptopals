@@ -259,54 +259,57 @@ impl Storage {
 
       let mut output: Vec<u8> = Vec::new();
       let mut temp: u8 = 0x00;
-      let mut ending: u8 = 0;
 
-      for item in &self.data {
+      if self.data_type == "hex" && new_base == "base64" {
         // hex -> base64
-        if new_base=="base64" && ending == 0 {
-          // nothing in item
-          temp = item << 2;
-          // temp now has 4 bits in it (00****00)
-          ending = 1;
-        } else if new_base=="base64" && ending == 1 {
-          temp |= (item & 0x0C) >> 2;
-          // fill first 2 bits in temp and push
-          // temp has 6 bits (00******)
-          output.push(temp);
-          temp = (item & 0x03) << 4;
-          // push remaining two bits in temp
-          // temp has 2 bits (00**0000)
-          ending = 2;
-        } else if new_base=="base64" && ending == 2{
-          temp |= item;
-          // temp has 6 bits (00******)
-          output.push(temp);
-          ending = 0;
-          // temp now has 0 bits (00000000)
+
+        for (i, item) in self.data.iter().enumerate() {
+          if i % 3 == 0 {
+            // nothing in item
+            temp = item << 2;
+            // temp now has 4 bits in it (00****00)
+          } else if i % 3 == 1 {
+            temp |= (item & 0x0C) >> 2;
+            // fill first 2 bits in temp and push
+            // temp has 6 bits (00******)
+            output.push(temp);
+            temp = (item & 0x03) << 4;
+            // push remaining two bits in temp
+            // temp has 2 bits (00**0000)
+          } else if i % 3 == 2 {
+            temp |= item;
+            // temp has 6 bits (00******)
+            output.push(temp);
+            // temp now has 0 bits (00000000)
+          }
         }
 
+      } else if self.data_type == "base64" && new_base == "hex" {
         // base64 -> hex
-        else if new_base == "hex" && ending == 0 {
-          // we want to add first 4 bits to self.data
-          // we want to push the remaining 2 bits to temp
-          temp = (item & 0x3C) >> 2;
-          // temp has 4 bits (0000****)
-          output.push(temp);
-          temp = (item & 0x03) << 2; 
-          // temp has 2 bits (0000**00)
-          ending = 1;
-        } else if new_base == "hex" && ending == 1 {
-          // we want to add first 2 bits to temp and then push to self.data
-          // we want to add the remaining 4 bits to temp and then push to self.data
-          temp |= (item & 0x30) >> 4;
-          // temp has 4 bits (0000****)
-          output.push(temp);
-          temp = item & 0x0F;
-          output.push(temp);
-          // temp has 0 bits (00000000)
-          ending = 0;
+
+        for (i, item) in self.data.iter().enumerate() {
+          if i % 2 == 0 {
+            // we want to add first 4 bits to self.data
+            // we want to push the remaining 2 bits to temp
+            temp = (item & 0x3C) >> 2;
+            // temp has 4 bits (0000****)
+            output.push(temp);
+            temp = (item & 0x03) << 2; 
+            // temp has 2 bits (0000**00)
+          } else if i % 2 == 1 {
+            // we want to add first 2 bits to temp and then push to self.data
+            // we want to add the remaining 4 bits to temp and then push to self.data
+            temp |= (item & 0x30) >> 4;
+            // temp has 4 bits (0000****)
+            output.push(temp);
+            temp = item & 0x0F;
+            output.push(temp);
+            // temp has 0 bits (00000000)
+          }
         }
+        
       }
+
       self.data = output;
       self.data_type = new_base.to_string();
     }
