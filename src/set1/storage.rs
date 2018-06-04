@@ -1,5 +1,13 @@
 use std::ops;
 
+// TODO: sepeate this into multiple files (header, methods, and test?)
+// TODO: ownership? who owns what and why
+// TODO: use .iter().map().collect() instead of for item in &self.data????
+// TODO: clean up change base
+// TODO: write tests for XOR (full + repeating)
+// TODO: write tests for change_base
+// TODO: write tests for char_to_u8 and u8_to_char 
+
 pub struct Storage {
   data: Vec<u8>,
   data_type: String,
@@ -41,11 +49,6 @@ impl ops::BitXor for Storage {
   }
 }
 
-// TODO: ownership? who owns what and why
-// -- get_data method is a problem
-
-// TODO: use .iter().map().collect() instead of for item in &self.data????
-
 impl Storage {
 
   /* new -- constructor for storage 
@@ -76,16 +79,16 @@ impl Storage {
    * Parameters: void
    * Return: self.data (Vec<u8>) - data in vector format
    */
-  pub fn get_data(self) -> Vec<u8> {
-    self.data
+  pub fn get_data(&self) -> &Vec<u8> {
+    &self.data
   }
 
   /* get_data_type -- helper function to get self.data_type
    * Parameters: void
    * Return: self.data_type (&str) - data_typ 
    */
-  pub fn get_data_type(&self) -> &str {
-    self.data_type.as_str()
+  pub fn get_data_type(&self) -> &String {
+    &self.data_type
   }
 
   /* build_data -- helper function to build self.data
@@ -360,3 +363,125 @@ impl Storage {
     }
   }
 }
+
+
+#[cfg(test)]
+mod storage_unit_tests {
+  use super::*;
+
+  /* - Implement?
+  #[test]
+  fn create_blank_storage() {
+    let s: Storage = Storage::new();
+  }
+  */
+  
+  #[test]
+  fn check_valid_hex_to_string() {
+    // check every possible character in hex string
+    // check uppercase hex characters go to lowercase
+    let s: Storage = Storage::new(&"0123456789ABCDEFabcdef".to_string(), &"hex".to_string());
+    assert_eq!("0123456789abcdefabcdef", s.to_string());
+  }
+
+  #[test]
+  #[should_panic]
+  fn check_invalid_hex_to_string() {
+    // check invalid character in hex string
+    let _s: Storage = Storage::new(&"ghijklmnop".to_string(), &"hex".to_string());
+  }
+  
+  #[test]
+  fn check_base64_to_string() {
+    let s: Storage = Storage::new(&"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+".to_string(), &"base64".to_string());
+    assert_eq!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+", s.to_string());
+  }
+
+  #[test]
+  #[should_panic]
+  fn check_invalid_base64_to_string() {
+    // check invalid character in hex string
+    let _s: Storage = Storage::new(&"!@#$*^)($%@_".to_string(), &"base64".to_string());
+  }
+
+  #[test]
+  fn check_ascii_to_string() {
+    let s: Storage = Storage::new(&"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()".to_string(), &"ascii".to_string());
+    assert_eq!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", s.to_string());
+  }
+
+  #[test]
+  fn check_get_data_hex() {
+    let hex = Storage::new(&"0123456789ABCDEFabcdef".to_string(), &"hex".to_string());
+    let test_hex = vec!(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F);
+    assert_eq!(&test_hex, hex.get_data());
+    assert_eq!(test_hex, Storage::build_data(&"0123456789ABCDEFabcdef".to_string(), &"hex".to_string()));
+    assert_eq!("hex", hex.get_data_type());
+  }
+
+  #[test]
+  fn check_get_data_base64() {
+    let base64 = Storage::new(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".to_string(), &"base64".to_string());
+    let test_base64: Vec<u8> = (0u8..64).collect();
+
+    assert_eq!(&test_base64, base64.get_data());
+    assert_eq!(test_base64, Storage::build_data(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".to_string(), &"base64".to_string()));
+    assert_eq!("base64", base64.get_data_type());
+  }
+
+  #[test]
+  fn check_get_data_ascii() {
+    let base64 = Storage::new(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".to_string(), &"base64".to_string());
+    let test_base64: Vec<u8> = (0u8..64).collect();
+
+    assert_eq!(&test_base64, base64.get_data());
+    assert_eq!(test_base64, Storage::build_data(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".to_string(), &"base64".to_string()));
+    assert_eq!("base64", base64.get_data_type());
+  }
+
+  
+}
+
+/*
+  // Test 1
+  let hex1 = storage::Storage::new(&"0123456789ABCDEF".to_string(), &"hex".to_string());
+  let test_hex1 = vec!(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F);
+  println!("Test 1 -- testing str_to_vec");
+  println!("output = Vec<u8> {{01, 23, 45, 67, 89, AB, CD, EF}}");
+  // println!("Result: {}, Type: {}", hex1.get_data() == test_hex1, hex1.get_data_type());
+  println!("Result: {}", hex1.get_data() == test_hex1);
+  println!();
+
+  // Test 2
+  let hex2 = storage::Storage::new(&"012".to_string(), &"hex".to_string());
+  let test_hex2 = vec!(0x00, 0x01, 0x02);
+  println!("Test 2 -- odd str_to_vec"); 
+  println!("output = Vec<u8> {{0x01, 0x20}}");
+  println!("Result: {}", hex2.get_data() == test_hex2);
+  println!();
+  
+  // Test 3
+  let mut hex3 = storage::Storage::new(&"49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d".to_string(), &"hex".to_string());
+  println!("Test 3 -- testing str_to_vec and print_hex_vec");
+  println!("Ans: 49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d");
+  print!("Res: ");
+  hex3.print();
+  println!();
+
+  // Test 4
+  hex3.change_base(&"base64".to_string());
+  println!("Test 4 -- hex to base64");
+  println!("Ans: SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t");
+  print!("Res: ");
+  hex3.print();
+  println!();
+
+  // Test 5
+  hex3.change_base(&"hex".to_string());
+  println!("Test 5 -- now change back, base64 to hex");
+  println!("Ans: 49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d");
+  print!("Res: ");
+  hex3.print();
+  println!();
+
+*/
