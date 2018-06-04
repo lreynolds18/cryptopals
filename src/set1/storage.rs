@@ -43,6 +43,9 @@ impl ops::BitXor for Storage {
 
 // TODO: ownership? who owns what and why
 // -- get_data method is a problem
+
+// TODO: use .iter().map().collect() instead of for item in &self.data????
+
 impl Storage {
 
   /* new -- constructor for storage 
@@ -176,67 +179,6 @@ impl Storage {
     out
   }
 
-  /* to_string -- helper function to convert self.data Vec<u8> to ASCII string
-   * Parameters: void 
-   * Return: out (&str) - Hex/Base64 data in string format 
-   */
-  pub fn to_ascii_string(&self) -> String {
-    let mut out = String::new();
-    let mut tmp: u8 = 0;
-    let mut ending = 0;
-  
-    // TODO: refactor ending out?  use index instead -- i%2==1 i&2==0
-    if self.data_type == "hex" && self.data.len() % 2 == 0 {
-      for hex in &self.data {
-        if ending == 0 {
-          tmp = hex << 4;
-          ending = 1;
-        } else if ending == 1 {
-          tmp |= hex;
-          out.push(tmp as char);
-          ending = 0;
-        } 
-      }
-    } else if self.data_type == "base64" && self.data.len() % 4 == 0 {
-      for base64 in &self.data {
-        if ending == 0 {
-          // tmp starts as 0x00000000
-          tmp = base64 << 2;
-          // tmp is now 0x******00
-          ending = 1;
-        } else if ending == 1 {
-          // tmp starts as 0x******00
-          tmp |= (base64 & 0x30) >> 4;
-          // tmp is now 0x********
-          out.push(tmp as char);
-          // tmp is now 0x00000000
-          tmp = (base64 & 0x0F) << 2;
-          // tmp is now 0x****0000
-          ending = 2;
-        } else if ending == 2 {
-          // tmp start at 0x****0000
-          tmp |= (base64 & 0x3C) >> 2;
-          // tmp is now 0x********
-          out.push(tmp as char);
-          // tmp is now 0x00000000
-          tmp = (base64 & 0x03) << 6;
-          // tmp is now 0x**000000
-          ending = 3;
-        } else if ending == 3 {
-          // tmp starts as 0x**000000
-          tmp |= base64;
-          // tmp is now 0x********
-          out.push(tmp as char);
-          // tmp is now 0x00000000
-          ending = 0;
-        }
-      }
-    } else {
-      panic!("Error: the data doesn't fit nicely into an ASCII string");
-    }
-    out
-  }
-
   /* change_base -- convert old_base to new_base
    * currently handles hex -> base64 and base64 -> hex
    * changes self.data and self.data_type in struct
@@ -245,23 +187,18 @@ impl Storage {
    */
   pub fn change_base(&mut self, new_base: &str) {
     if self.data_type != new_base {
-      // if converting to base64, we add elements to the vec by 3 hex values
-      // 00001111, 00001122, 00002222 -> 00111111, 00222222
-      if new_base == "base64" && self.data.len() % 3 != 0 {
-        panic!("Error: hex input does not fit nicely into base64.");
-      }
-
-      // if converting to hex, we add elements to the vec by 2 base64 values
-      // 00111122 00223333 -> 00001111, 00002222, 00003333
-      if new_base == "hex" && self.data.len() % 2 != 0 {
-        panic!("Error: base64 does not fit nicely into hex.");
-      }
 
       let mut output: Vec<u8> = Vec::new();
       let mut temp: u8 = 0x00;
 
       if self.data_type == "hex" && new_base == "base64" {
         // hex -> base64
+
+        // if converting to base64, we add elements to the vec by 3 hex values
+        // 00001111, 00001122, 00002222 -> 00111111, 00222222
+        if new_base == "base64" && self.data.len() % 3 != 0 {
+          panic!("Error: hex input does not fit nicely into base64.");
+        }
 
         for (i, item) in self.data.iter().enumerate() {
           if i % 3 == 0 {
@@ -287,6 +224,12 @@ impl Storage {
       } else if self.data_type == "base64" && new_base == "hex" {
         // base64 -> hex
 
+        // if converting to hex, we add elements to the vec by 2 base64 values
+        // 00111122 00223333 -> 00001111, 00002222, 00003333
+        if new_base == "hex" && self.data.len() % 2 != 0 {
+          panic!("Error: base64 does not fit nicely into hex.");
+        }
+
         for (i, item) in self.data.iter().enumerate() {
           if i % 2 == 0 {
             // we want to add first 4 bits to self.data
@@ -307,7 +250,97 @@ impl Storage {
             // temp has 0 bits (00000000)
           }
         }
-        
+      } else if self.data_type == "hex" && new_base == "ascii" {
+        // hex -> ascii
+        if self.data.len() % 2 != 0 {
+          panic!("Error: the data doesn't fit nicely into an ASCII string");
+        }
+
+        for (i, item) in self.data.iter().enumerate() {
+          if i%2 == 0 {
+            // temp has 0 bits (00000000)
+            temp = item << 4; 
+            // temp has 4 bits (****0000)
+          } else if i%2 == 1 {
+            // temp has 4 bits (****0000)
+            temp |= item;
+            // temp has 8 bits (********)
+            output.push(temp);
+            // temp has 0 bits (00000000)
+          } 
+        }
+      } else if self.data_type == "ascii" && new_base == "hex" {
+        // ascii -> hex
+        for item in &self.data {
+          // push first 4 bits to vec (****0000) >> 4 = (0000****)
+          output.push((item & 0xF0) >> 4);
+          // push last 4 bits to vec (0000****)
+          output.push(item & 0x0F);
+        }
+      } else if self.data_type == "base64" && new_base == "ascii" {
+        // base64 -> ascii
+        if self.data.len() % 4 != 0 {
+          panic!("Error: the data doesn't fit nicely into an ASCII string");
+        }
+
+        for (i, item) in self.data.iter().enumerate() {
+          if i%4 == 0 {
+            // temp starts as 00000000
+            temp = item << 2;
+            // temp is now ******00
+          } else if i%4 == 1 {
+            // temp starts as ******00
+            temp |= (item & 0x30) >> 4;
+            // temp is now ********
+            output.push(temp);
+            // temp is now 00000000
+            temp = (item & 0x0F) << 2;
+            // temp is now ****0000
+          } else if i%4 == 2 {
+            // temp start at ****0000
+            temp |= (item & 0x3C) >> 2;
+            // temp is now ********
+            output.push(temp);
+            // temp is now 00000000
+            temp = (item & 0x03) << 6;
+            // temp is now **000000
+          } else if i%4 == 3 {
+            // temp starts as **000000
+            temp |= item;
+            // temp is now ********
+            output.push(temp);
+            // temp is now 00000000
+          }
+        }
+      } else if self.data_type == "ascii" && new_base == "base64" {
+        // ascii -> base64
+        for (i, item) in self.data.iter().enumerate() {
+          if i%3 == 0 {
+            // temp starts at 00000000
+            temp = (item & 0xFC) >> 2;
+            // temp is now 00******
+            output.push(temp);
+            // temp is now 00000000
+            temp = (item & 0x03) << 4;
+            // temp is now 00**0000
+          } else if i%3 == 1 {
+            // temp starts as 00**0000
+            temp |= (item & 0xF0) >> 4;
+            // temp is now 00******
+            output.push(temp);
+            // temp is now 00000000
+            temp = (item & 0x0F) << 2;
+            // temp is now 00****00
+          } else if i%3 == 2 {
+            // temp starts at 00****00
+            temp |= (item & 0xC0) >> 6;
+            // temp is now 00******
+            output.push(temp);
+            // temp is now 00000000
+            output.push(item & 0x3F);
+            // temp is now 00000000
+          }
+        }
       }
 
       self.data = output;
