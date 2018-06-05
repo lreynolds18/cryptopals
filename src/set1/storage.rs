@@ -17,9 +17,9 @@ pub struct Storage {
 // handles repeating XOR so if lhs is bigger than rhs
 // it will repeatable XOR the rhs on the lhs
 impl ops::BitXor for Storage {
-  type Output = Self;
+  type Output = Storage;
 
-  fn bitxor(self, rhs: Self) -> Self {
+  fn bitxor(self, rhs: Storage) -> Storage {
     if self.data_type != rhs.data_type {
       panic!("Error: Storage are not the same type.  LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
     }
@@ -42,6 +42,40 @@ impl ops::BitXor for Storage {
       Storage {
         data: out,
         data_type: self.data_type
+      }
+    } else  {
+      panic!("Error: Storage cannot be XOR'd against each other.  LHS length is {}, RHS length is {}", self.data.len(), rhs.data.len());
+    }
+  }
+}
+
+
+impl<'a> ops::BitXor<&'a Storage> for &'a Storage {
+  type Output = Storage;
+
+  fn bitxor(self, rhs: &Storage) -> Storage {
+    if self.data_type != rhs.data_type {
+      panic!("Error: Storage are not the same type.  LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
+    }
+  
+    if self.data.len() == rhs.data.len() {
+      Storage {
+        data: self.data.iter()
+                       .zip(rhs.data.iter())
+                       .map(|(l, r)| l ^ r)
+                       .collect(),
+        data_type: self.get_data_type().to_string()
+      }
+    } else if self.data.len() > rhs.data.len() {
+      let mut out: Vec<u8> = Vec::new();
+      let rhs_len: i64 = rhs.data.len() as i64;
+        
+      for (i, item) in self.data.iter().enumerate() {
+        out.push(item ^ rhs.data[((i as i64) % rhs_len) as usize]);
+      }
+      Storage {
+        data: out,
+        data_type: self.get_data_type().to_string()
       }
     } else  {
       panic!("Error: Storage cannot be XOR'd against each other.  LHS length is {}, RHS length is {}", self.data.len(), rhs.data.len());
