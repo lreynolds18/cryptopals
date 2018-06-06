@@ -158,3 +158,8 @@ pub fn repeating_key_xor_encrypt(lhs_str: &str, lhs_type: &str, rhs_str: &str, r
   ans.to_string()
 }
 
+pub fn break_repeating_key_xor(filename: &str) -> (String, char, i32) {
+
+  (String::new(), '?', 0) 
+}
+

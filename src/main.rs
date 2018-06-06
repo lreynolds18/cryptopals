@@ -1,7 +1,6 @@
 pub mod set1;
 
 fn main() {
-  // TODO: change this to go through every set and challenge
 
   // Set 1, Challenge 1
   println!("Set 1, Challenge 1 - hex to base64");
@@ -22,23 +21,23 @@ fn main() {
   // Set 1, Challenge 3
   println!("Set 1, Challenge 3 - Single-byte XOR cipher");
   println!("Input: 1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736");
-  let (ans_message, ans_key) = set1::single_byte_xor_cipher(&"1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736".to_string(), &"hex".to_string());
+  let (ans_message3, ans_key3) = set1::single_byte_xor_cipher(&"1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736".to_string(), &"hex".to_string());
   println!("Ans message: Cooking MC's like a pound of bacon");
-  println!("Res message: {}", ans_message);
+  println!("Res message: {}", ans_message3);
   println!("Ans key: X");
-  println!("Res key: {}", ans_key); 
+  println!("Res key: {}", ans_key3); 
   println!();
 
   // Set 1, Challenge 4 
   println!("Set 1, Challenge 4 - Detect single-character XOR");
   println!("Input File: set1challenge4.txt");
-  let (ans_message4, ans_key4, ans_line) = set1::detect_single_character_xor("./set1challenge4.txt");
+  let (ans_message4, ans_key4, ans_line4) = set1::detect_single_character_xor("./set1challenge4.txt");
   print!("Ans message: Now that the party is jumping\n");
   print!("Res message: {}", ans_message4);
   println!("Ans key: 5");
   println!("Res key: {}", ans_key4);
   println!("Ans line: 5");
-  println!("Res line: {}", ans_line);
+  println!("Res line: {}", ans_line4);
   println!();
 
   // Set 1, Challenge 5
@@ -49,5 +48,16 @@ fn main() {
   println!("Res: {}", set1::repeating_key_xor_encrypt(&"Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal".to_string(), &"ascii".to_string(), &"ICE".to_string(), &"ascii".to_string()));
   println!();
 
+  // Set 1, Challenge 6
+  println!("Set 1, Challenge 6 - Break repeating-key XOR");
+  println!("Input File: set1challenge6.txt");
+  let (ans_message6, ans_key6, ans_line6) = set1::break_repeating_key_xor("./set1challenge4.txt");
+  print!("Ans message: Now that the party is jumping\n");
+  print!("Res message: {}", ans_message6);
+  println!("Ans key: 5");
+  println!("Res key: {}", ans_key6);
+  println!("Ans line: 5");
+  println!("Res line: {}", ans_line6);
+  println!();
 
 }
