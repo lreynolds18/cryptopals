@@ -32,8 +32,13 @@ fn main() {
   // Set 1, Challenge 4 
   println!("Set 1, Challenge 4 - Detect single-character XOR");
   println!("Input File: set1challenge4.txt");
-  println!("Ans: ?");
-  println!("Res: {}", set1::detect_single_character_xor("./set1challenge4.txt"));
+  let (ans_message4, ans_key4, ans_line) = set1::detect_single_character_xor("./set1challenge4.txt");
+  print!("Ans message: Now that the party is jumping\n");
+  print!("Res message: {}", ans_message4);
+  println!("Ans key: 5");
+  println!("Res key: {}", ans_key4);
+  println!("Ans line: 5");
+  println!("Res line: {}", ans_line);
   println!();
 
   // Set 1, Challenge 5

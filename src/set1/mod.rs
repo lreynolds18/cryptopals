@@ -1,5 +1,8 @@
 pub mod storage;
 
+use std::fs::File;
+use std::io::prelude::*;
+
 /* hex_to_base64 -- Set 1, Challenge 1
  * http://cryptopals.com/sets/1/challenges/1
  * converts hex to base64
@@ -86,12 +89,52 @@ pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
  * http://cryptopals.com/sets/1/challenges/4
  * One of the 60-character strings in this file has been encrypted by single-character XOR. Find it. 
  * Parameters: filename(&str) - File to detect single-character XOR
- * Return: (String, Char) - (hidden message, key that was used)
+ * Return: (i32, Char) - (line number, key that was used)
  */
-pub fn detect_single_character_xor(filename: &str) -> (char) {
+pub fn detect_single_character_xor(filename: &str) -> (String, char, i32) {
 
-  // ("".to_string(), 'A')
-  'A'
+  let mut f = File::open(filename).expect("Error: File not found");
+
+  let mut contents = String::new();
+  f.read_to_string(&mut contents)
+    .expect("Error: Something went wrong when reading the file");
+
+  let mut result_string: String = String::new();
+  let mut result_char: char = ' ';
+  let mut result_num: i32 = 0;
+
+  let mut max_freq: i32 = 0;
+  let mut tmp_freq: i32;
+  let mut count: i32 = 0;
+
+  for l in contents.lines() {
+    let mut obj = storage::Storage::new(&l, &"hex");
+    // println!("|{}|", l);
+    
+    // obj.change_base(&"ascii".to_string());
+    // obj.print();
+    // obj.change_base(&"hex".to_string());
+
+    for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
+      let mut char_obj = storage::Storage::new(&i.to_string(), &"ascii");  
+      char_obj.change_base(&"hex".to_string());
+      let mut ans = &obj ^ &char_obj;
+      ans.change_base(&"ascii".to_string());
+
+      tmp_freq = char_freq(&ans.to_string().as_str());
+      if tmp_freq > max_freq {
+        result_string = ans.to_string();
+        result_char = i;
+        result_num = count;
+        max_freq = tmp_freq;
+      }
+    }
+    count += 1;
+    // println!("{}", result_string);
+    // println!("{}, {}", result_string, result_char);
+  }
+
+  (result_string, result_char, result_num)
 }
 
 
