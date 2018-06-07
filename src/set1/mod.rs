@@ -170,20 +170,46 @@ pub fn repeating_key_xor_encrypt(lhs_str: &str, lhs_type: &str, rhs_str: &str, r
  *   Step 7: Solve each block as if it was single-character XOR. You already have code to do this.
  *   Step 8: For each block, the single-byte XOR key that produces the best looking histogram is the repeating-key XOR key byte for that block. Put them together and you have the key. 
  * Parameters: filename(&str) - File to detect repeating key xor
- * Return: (String, char, i32) - (Secret message, key that was used, line number)
+ * Return: (String, char, i32) - (Secret message, key that was used, key size, line number)
  */
-pub fn break_repeating_key_xor(filename: &str) -> (String, char, i32) {
+pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     
+  // open file and put in contents
   let mut f = File::open(filename).expect("Error: File not found");
 
   let mut contents = String::new();
   f.read_to_string(&mut contents)
     .expect("Error: Something went wrong when reading the file");
 
-  for l in contents.lines() {
-    let mut obj = storage::Storage::new(&l, &"hex");
+  // put first line of the file in keysize_obj
+  let first_line = &contents.lines().next().expect("line couldn't be read");
+  let mut keysize_obj = storage::Storage::new(&first_line, &"base64".to_string());
+  keysize_obj.change_base(&"hex".to_string());
+  let first_line_hex = keysize_obj.to_string();
+
+  // Step 1-5
+  let mut keysize: i32 = 0;  
+  let mut min_nor_dist: f64 = 1.0f64 / 0.0f64; // set as MAX
+  let mut tmp: f64;
+
+  for i in 2..41 {
+    let lhs = storage::Storage::new(&first_line_hex[0..i], &"hex".to_string());
+    let rhs = storage::Storage::new(&first_line_hex[i..2*i], &"hex".to_string());
+
+    tmp = storage::Storage::hamming_distance(&lhs, &rhs) as f64 / i as f64;
+    if tmp < min_nor_dist {
+      keysize = i as i32;
+      min_nor_dist = tmp;
+    }
   }
 
-  (String::new(), '?', 0) 
+  /*
+  for l in contents.lines() {
+    let mut obj = storage::Storage::new(&l, &"hex");
+    obj.print();
+  }
+  */
+
+  (String::new(), "idky".to_string(), keysize, 0) 
 }
 

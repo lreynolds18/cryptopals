@@ -51,11 +51,13 @@ fn main() {
   // Set 1, Challenge 6
   println!("Set 1, Challenge 6 - Break repeating-key XOR");
   println!("Input File: set1challenge6.txt");
-  let (ans_message6, ans_key6, ans_line6) = set1::break_repeating_key_xor("./set1challenge4.txt");
+  let (ans_message6, ans_key6, ans_keysize6, ans_line6) = set1::break_repeating_key_xor("./set1challenge4.txt");
   println!("Ans message: ?");
   println!("Res message: {}", ans_message6);
   println!("Ans key: ?");
   println!("Res key: {}", ans_key6);
+  println!("Ans key: ?");
+  println!("Res key: {}", ans_keysize6);
   println!("Ans line: ?");
   println!("Res line: {}", ans_line6);
   println!();

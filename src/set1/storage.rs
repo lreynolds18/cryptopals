@@ -139,6 +139,46 @@ impl Storage {
     data
   }
 
+
+  /* hamming_distance-- helper function to calculate the hamming distance between two storages
+   * Parameters: lhs (&Storage) - left hand side storage,
+   *             rhs (&Storage) - rigth hand side storage
+   * Return: out (i32) - number of bits that are different between the two storages
+   */
+  pub fn hamming_distance(lhs: &Storage, rhs: &Storage) -> i32 {
+    if lhs.get_data().len() != rhs.get_data().len() {
+      panic!("Error: cannot compute hamming distance when the strings are not the same length. LHS length is {}, RHS length is {}", lhs.get_data().len(), rhs.get_data().len());
+    }
+
+    if lhs.get_data_type() != rhs.get_data_type() {
+      panic!("Error: cannot compute hamming distance when the data types are not the same.  LHS type is {}, RHS type is {}", lhs.get_data_type(), rhs.get_data_type());
+    }
+
+    let start = match lhs.get_data_type().as_str() {
+      "ascii" => 0,  // ********
+      "hex" => 4,    // 0000****
+      "base64" => 2, // 00******
+      _ => { panic!("Error: invalid data type"); }
+    };
+
+    lhs.data.iter()
+            .zip(rhs.data.iter())
+            .map(|(l, r)| {
+                let tmp = l ^ r;
+                let mut c: i32 = 0;
+                let bin: Vec<u8> = vec!(0x90, 0x40, 0x20, 0x10, 0x09, 0x04, 0x02, 0x01);  
+                for (i, var) in bin.iter().enumerate() {
+                  if i >= start { 
+                    c += ((tmp & var) >> (7-i as u8)) as i32;
+                  }
+                }
+                c
+              }
+            )
+            .sum()
+  } 
+
+
   /* char_to_u8 -- helper function to convert (hex/base64) char to u8
    *               (note: we don't want self here because we want to be able to use this 
    *               outside of this struct / want to use this in constructor)
@@ -471,6 +511,30 @@ mod storage_unit_tests {
     assert_eq!(&test_base64, base64.get_data());
     assert_eq!(test_base64, Storage::build_data(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".to_string(), &"base64".to_string()));
     assert_eq!("base64", base64.get_data_type());
+  }
+
+  #[test]
+  fn check_hamming_distance_ascii() {
+    let lhs = Storage::new(&"this is a test".to_string(), &"ascii".to_string());
+    let rhs = Storage::new(&"wokka wokka!!!".to_string(), &"ascii".to_string());
+
+    assert_eq!(37, Storage::hamming_distance(&lhs, &rhs));
+  }
+
+  #[test]
+  fn check_hamming_distance_hex() {
+    let lhs = Storage::new(&"0123456789ABCDEF".to_string(), &"hex".to_string());
+    let rhs = Storage::new(&"FEDCBA9876543210".to_string(), &"hex".to_string());
+
+    assert_eq!(64, Storage::hamming_distance(&lhs, &rhs));
+  }
+
+  #[test]
+  fn check_hamming_distance_base64() {
+    let lhs = Storage::new(&"ABCDEF".to_string(), &"base64".to_string());
+    let rhs = Storage::new(&"abcdef".to_string(), &"base64".to_string());
+
+    assert_eq!(20, Storage::hamming_distance(&lhs, &rhs));
   }
 
   
