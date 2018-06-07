@@ -443,7 +443,7 @@ mod storage_unit_tests {
   fn check_valid_hex_to_string() {
     // check every possible character in hex string
     // check uppercase hex characters go to lowercase
-    let s: Storage = Storage::new_init(&"0123456789ABCDEFabcdef", &"hex");
+    let s: Storage = Storage::new_init("0123456789ABCDEFabcdef", "hex");
     assert_eq!("0123456789abcdefabcdef", s.to_string());
   }
 
@@ -451,12 +451,12 @@ mod storage_unit_tests {
   #[should_panic]
   fn check_invalid_hex_to_string() {
     // check invalid character in hex string
-    let _s: Storage = Storage::new_init(&"ghijklmnop", &"hex");
+    let _s: Storage = Storage::new_init("ghijklmnop", "hex");
   }
   
   #[test]
   fn check_base64_to_string() {
-    let s: Storage = Storage::new_init(&"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+", &"base64");
+    let s: Storage = Storage::new_init("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+", "base64");
     assert_eq!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+", s.to_string());
   }
 
@@ -464,64 +464,64 @@ mod storage_unit_tests {
   #[should_panic]
   fn check_invalid_base64_to_string() {
     // check invalid character in hex string
-    let _s: Storage = Storage::new_init(&"!@#$*^)($%@_", &"base64");
+    let _s: Storage = Storage::new_init("!@#$*^)($%@_", "base64");
   }
 
   #[test]
   fn check_ascii_to_string() {
-    let s: Storage = Storage::new_init(&"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", &"ascii");
+    let s: Storage = Storage::new_init("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", "ascii");
     assert_eq!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", s.to_string());
   }
 
   #[test]
   fn check_get_data_hex() {
-    let hex = Storage::new_init(&"0123456789ABCDEFabcdef", &"hex");
+    let hex = Storage::new_init("0123456789ABCDEFabcdef", "hex");
     let test_hex = vec!(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F);
     assert_eq!(&test_hex, hex.get_data());
-    assert_eq!(test_hex, Storage::build_data(&"0123456789ABCDEFabcdef", &"hex"));
+    assert_eq!(test_hex, Storage::build_data("0123456789ABCDEFabcdef", "hex"));
     assert_eq!("hex", hex.get_data_type());
   }
 
   #[test]
   fn check_get_data_base64() {
-    let base64 = Storage::new_init(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", &"base64");
+    let base64 = Storage::new_init("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", "base64");
     let test_base64: Vec<u8> = (0u8..64).collect();
 
     assert_eq!(&test_base64, base64.get_data());
-    assert_eq!(test_base64, Storage::build_data(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", &"base64"));
+    assert_eq!(test_base64, Storage::build_data("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", "base64"));
     assert_eq!("base64", base64.get_data_type());
   }
 
   #[test]
   fn check_get_data_ascii() {
-    let base64 = Storage::new_init(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", &"base64");
+    let base64 = Storage::new_init("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", "base64");
     let test_base64: Vec<u8> = (0u8..64).collect();
 
     assert_eq!(&test_base64, base64.get_data());
-    assert_eq!(test_base64, Storage::build_data(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", &"base64"));
+    assert_eq!(test_base64, Storage::build_data("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", "base64"));
     assert_eq!("base64", base64.get_data_type());
   }
 
   #[test]
   fn check_hamming_distance_ascii() {
-    let lhs = Storage::new_init(&"this is a test", &"ascii");
-    let rhs = Storage::new_init(&"wokka wokka!!!", &"ascii");
+    let lhs = Storage::new_init("this is a test", "ascii");
+    let rhs = Storage::new_init("wokka wokka!!!", "ascii");
 
     assert_eq!(37, Storage::hamming_distance(&lhs, &rhs));
   }
 
   #[test]
   fn check_hamming_distance_hex() {
-    let lhs = Storage::new_init(&"0123456789ABCDEF", &"hex");
-    let rhs = Storage::new_init(&"FEDCBA9876543210", &"hex");
+    let lhs = Storage::new_init("0123456789ABCDEF", "hex");
+    let rhs = Storage::new_init("FEDCBA9876543210", "hex");
 
     assert_eq!(64, Storage::hamming_distance(&lhs, &rhs));
   }
 
   #[test]
   fn check_hamming_distance_base64() {
-    let lhs = Storage::new_init(&"ABCDEF", &"base64");
-    let rhs = Storage::new_init(&"abcdef", &"base64");
+    let lhs = Storage::new_init("ABCDEF", "base64");
+    let rhs = Storage::new_init("abcdef", "base64");
 
     assert_eq!(20, Storage::hamming_distance(&lhs, &rhs));
   }

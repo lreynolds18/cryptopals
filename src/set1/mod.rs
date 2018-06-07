@@ -11,9 +11,9 @@ use std::io::prelude::*;
  * Return: String - output of converting hex string to base64 string
  */
 pub fn hex_to_base64(hex_str: &str) -> String {
-  let mut s = storage::Storage::new_init(&hex_str, &"hex");
+  let mut s = storage::Storage::new_init(hex_str, "hex");
 
-  s.change_base(&"base64");
+  s.change_base("base64");
 
   s.to_string()
 }
@@ -29,8 +29,8 @@ pub fn hex_to_base64(hex_str: &str) -> String {
  * Return: String - output of xor operation on lhs_str and rhs_str 
  */
 pub fn fixed_xor(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) -> String {
-  let lhs = storage::Storage::new_init(&lhs_str, &lhs_type);
-  let rhs = storage::Storage::new_init(&rhs_str, &rhs_type);
+  let lhs = storage::Storage::new_init(lhs_str, lhs_type);
+  let rhs = storage::Storage::new_init(rhs_str, rhs_type);
 
   let ans = &lhs ^ &rhs;
 
@@ -60,7 +60,7 @@ pub fn char_freq(str_inp: &str) -> i32 {
  * Return: (String, Char) - (hidden message, key that was used)
  */
 pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
-  let s = storage::Storage::new_init(&str_inp, &str_type);
+  let s = storage::Storage::new_init(str_inp, str_type);
 
   let mut result_string: String = s.to_string();
   let mut result_char: char = '0';
@@ -68,12 +68,12 @@ pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
   let mut tmp_freq: i32;
 
   for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
-    let mut char_obj = storage::Storage::new_init(&i.to_string(), &"ascii");  
-    char_obj.change_base(&"hex");
+    let mut char_obj = storage::Storage::new_init(&i.to_string(), "ascii");
+    char_obj.change_base("hex");
     let mut ans = &s ^ &char_obj;
-    ans.change_base(&"ascii");
+    ans.change_base("ascii");
     
-    tmp_freq = char_freq(&ans.to_string().as_str());
+    tmp_freq = char_freq(ans.to_string().as_str());
     if tmp_freq > max_freq {
       result_string = ans.to_string();
       result_char = i;
@@ -116,10 +116,10 @@ pub fn detect_single_character_xor(filename: &str) -> (String, char, i32) {
     let mut obj = storage::Storage::new_init(&l, &"hex");
 
     for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
-      let mut char_obj = storage::Storage::new_init(&i.to_string(), &"ascii");  
-      char_obj.change_base(&"hex");
+      let mut char_obj = storage::Storage::new_init(&i.to_string(), "ascii");
+      char_obj.change_base("hex");
       let mut ans = &obj ^ &char_obj;
-      ans.change_base(&"ascii");
+      ans.change_base("ascii");
 
       tmp_freq = char_freq(&ans.to_string().as_str());
       if tmp_freq > max_freq {
@@ -146,12 +146,12 @@ pub fn detect_single_character_xor(filename: &str) -> (String, char, i32) {
  */
 pub fn repeating_key_xor_encrypt(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) -> String {
   // TODO: handle \n -- newlines
-  let lhs = storage::Storage::new_init(&lhs_str, &lhs_type);
-  let rhs = storage::Storage::new_init(&rhs_str, &rhs_type);
+  let lhs = storage::Storage::new_init(lhs_str, lhs_type);
+  let rhs = storage::Storage::new_init(rhs_str, rhs_type);
   
   let mut ans = &lhs ^ &rhs;
 
-  ans.change_base(&"hex");
+  ans.change_base("hex");
 
   ans.to_string()
 }
@@ -185,8 +185,8 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
 
   // put first line of the file in keysize_obj
   let first_line = &contents.lines().next().expect("line couldn't be read");
-  let mut keysize_obj = storage::Storage::new_init(&first_line, &"base64");
-  keysize_obj.change_base(&"hex");
+  let mut keysize_obj = storage::Storage::new_init(first_line, "base64");
+  keysize_obj.change_base("hex");
   let first_line_hex = keysize_obj.to_string();
 
   // Step 1-4
@@ -195,8 +195,8 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   let mut tmp: f64;
 
   for i in 2..41 {
-    let lhs = storage::Storage::new_init(&first_line_hex[0..i], &"hex");
-    let rhs = storage::Storage::new_init(&first_line_hex[i..2*i], &"hex");
+    let lhs = storage::Storage::new_init(&first_line_hex[0..i], "hex");
+    let rhs = storage::Storage::new_init(&first_line_hex[i..2*i], "hex");
 
     tmp = storage::Storage::hamming_distance(&lhs, &rhs) as f64 / i as f64;
     if tmp < min_nor_dist {
@@ -227,15 +227,15 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
 
   for block in &blocks {
     let n = block.len() - block.len() % 4;
-    let mut obj = storage::Storage::new_init(&block[..n], &"base64");
+    let mut obj = storage::Storage::new_init(&block[..n], "base64");
     max_freq = 0;
-    obj.change_base(&"ascii");
+    obj.change_base("ascii");
 
     for ch in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
-      let mut char_obj = storage::Storage::new_init(&ch.to_string(), &"ascii");
+      let mut char_obj = storage::Storage::new_init(&ch.to_string(), "ascii");
       let mut ans = &obj ^ &char_obj;
 
-      tmp_freq = char_freq(&ans.to_string().as_str());
+      tmp_freq = char_freq(ans.to_string().as_str());
       if tmp_freq > max_freq {
         key_char = ch;
         max_freq = tmp_freq;
@@ -244,8 +244,8 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     key_string.push(key_char);
   }
 
-  let mut key_obj = storage::Storage::new_init(&key_string.as_str(), &"ascii");
-  key_obj.change_base(&"base64");
+  let mut key_obj = storage::Storage::new_init(&key_string.as_str(), "ascii");
+  key_obj.change_base("base64");
   
   /*
   let conts = String::new();
@@ -261,9 +261,9 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   */ 
   for l in contents.lines() {
     if l.len() == 60 {
-      let mut line_obj = storage::Storage::new_init(&l.to_string(), &"base64");
+      let mut line_obj = storage::Storage::new_init(&l.to_string(), "base64");
       let mut ans = &line_obj ^ &key_obj;
-      ans.change_base(&"ascii".to_string());
+      ans.change_base("ascii");
       ans.print();
     }
   }
