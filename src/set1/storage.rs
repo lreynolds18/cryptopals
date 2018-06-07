@@ -1,13 +1,9 @@
 use std::ops;
 
-// TODO: sepeate this into multiple files (header, methods, and test?)
 // TODO: ownership? who owns what and why
 // TODO: use .iter().map().collect() instead of for item in &self.data????
 // TODO: clean up change base
 // TODO: use boxes and error checking
-// TODO: write tests for XOR (full + repeating)
-// TODO: write tests for change_base
-// TODO: write tests for char_to_u8 and u8_to_char 
 
 pub struct Storage {
   data: Vec<u8>,
@@ -17,44 +13,15 @@ pub struct Storage {
 // XOR implementation for Storage ^ Storage = Storage
 // handles repeating XOR so if lhs is bigger than rhs
 // it will repeatable XOR the rhs on the lhs
-impl ops::BitXor for Storage {
-  type Output = Storage;
-
-  fn bitxor(self, rhs: Storage) -> Storage {
-    if self.data_type != rhs.data_type {
-      panic!("Error: Storage are not the same type.  LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
-    }
-  
-    if self.data.len() == rhs.data.len() {
-      Storage {
-        data: self.data.iter()
-                       .zip(rhs.data.iter())
-                       .map(|(l, r)| l ^ r)
-                       .collect(),
-        data_type: self.data_type
-      }
-    } else if self.data.len() > rhs.data.len() {
-      let mut out: Vec<u8> = Vec::new();
-      let rhs_len: i64 = rhs.data.len() as i64;
-        
-      for (i, item) in self.data.iter().enumerate() {
-        out.push(item ^ rhs.data[((i as i64) % rhs_len) as usize]);
-      }
-      Storage {
-        data: out,
-        data_type: self.data_type
-      }
-    } else  {
-      panic!("Error: Storage cannot be XOR'd against each other.  LHS length is {}, RHS length is {}", self.data.len(), rhs.data.len());
-    }
-  }
-}
-
-
+// we want to always pass references
 impl<'a> ops::BitXor<&'a Storage> for &'a Storage {
   type Output = Storage;
 
   fn bitxor(self, rhs: &Storage) -> Storage {
+    if self.data_type == "" || rhs.data_type == "" {
+      panic!("Error: cannot XOR on empty storage");
+    }
+
     if self.data_type != rhs.data_type {
       panic!("Error: Storage are not the same type.  LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
     }
@@ -85,46 +52,32 @@ impl<'a> ops::BitXor<&'a Storage> for &'a Storage {
 }
 
 impl Storage {
+  /* new -- empty constructor for storage 
+   * Parameters: void
+   * Return: Storage (w/ data and data_type)
+   */
+  pub fn new() -> Storage {
+    Storage {
+      data: Vec::new(),
+      data_type: String::new()
+    }
+  }
 
-  /* new -- constructor for storage 
+
+  /* new_init -- constructor for storage 
    * converts string to vec<u8>
    * assuming str_inp is in it's respected format of data_type (hex / base64)
    * Parameters: str_inp (&str) - input string, 
    *             data_type (&str) - data type of input string (hex or base64)
-   * Return: Storage (w/ data, data_type, and ending)
+   * Return: Storage (w/ data and data_type)
    */
-  pub fn new(str_inp: &str, data_type: &str) -> Storage {
+  pub fn new_init(str_inp: &str, data_type: &str) -> Storage {
     Storage {
       data: Storage::build_data(str_inp, data_type),
       data_type: String::from(data_type),
     }
   }
-  
-  /* set_data -- helper function to set self.data and self.data_type
-   * Parameters: str_inp (&str) - input string, 
-   *             data_type (&str) - data type of input string (hex or base64)
-   * Return: void 
-   */
-  pub fn set_data(&mut self, str_inp: &str, data_type: &str) {
-    self.data = Storage::build_data(str_inp, data_type);
-    self.data_type = String::from(data_type);
-  }
-  
-  /* get_data -- helper function to get self.data
-   * Parameters: void
-   * Return: self.data (Vec<u8>) - data in vector format
-   */
-  pub fn get_data(&self) -> &Vec<u8> {
-    &self.data
-  }
 
-  /* get_data_type -- helper function to get self.data_type
-   * Parameters: void
-   * Return: self.data_type (&str) - data_typ 
-   */
-  pub fn get_data_type(&self) -> &String {
-    &self.data_type
-  }
 
   /* build_data -- helper function to build self.data
    * Parameters: str_inp (&str) - input string, 
@@ -138,6 +91,35 @@ impl Storage {
       data.push(Storage::char_to_u8(c, data_type));
     }
     data
+  }
+
+
+  /* set_data -- helper function to set self.data and self.data_type
+   * Parameters: str_inp (&str) - input string, 
+   *             data_type (&str) - data type of input string (hex or base64)
+   * Return: void 
+   */
+  pub fn set_data(&mut self, str_inp: &str, data_type: &str) {
+    self.data = Storage::build_data(str_inp, data_type);
+    self.data_type = String::from(data_type);
+  }
+  
+
+  /* get_data -- helper function to get self.data
+   * Parameters: void
+   * Return: self.data (Vec<u8>) - data in vector format
+   */
+  pub fn get_data(&self) -> &Vec<u8> {
+    &self.data
+  }
+
+
+  /* get_data_type -- helper function to get self.data_type
+   * Parameters: void
+   * Return: self.data_type (&str) - data_typ 
+   */
+  pub fn get_data_type(&self) -> &String {
+    &self.data_type
   }
 
 
@@ -265,28 +247,27 @@ impl Storage {
     out
   }
 
-  /* change_base -- convert old_base to new_base
-   * currently handles hex -> base64 and base64 -> hex
+  /* change_base -- convert old_base to new_init_base
+   * handles hex -> base64, base64 -> hex, ascii -> hex, hex -> ascii,
+   * ascii -> base64, base64 -> ascii
    * changes self.data and self.data_type in struct
-   * Parameters: new_base (&str) - New base to convert old base to
+   * Parameters: new_init_base (&str) - New base to convert old base to
    * Return: void 
    */
-  pub fn change_base(&mut self, new_base: &str) {
-    // TODO: Is this a good idea???????????
-    // YES: THEN REFACTOR
-    // NO: COME UP W/ A NEW SOLUTION
+  pub fn change_base(&mut self, new_init_base: &str) {
+    // REFACTOR
 
-    if self.data_type != new_base {
+    if self.data_type != new_init_base {
 
       let mut output: Vec<u8> = Vec::new();
       let mut temp: u8 = 0x00;
 
-      if self.data_type == "hex" && new_base == "base64" {
+      if self.data_type == "hex" && new_init_base == "base64" {
         // hex -> base64
 
         // if converting to base64, we add elements to the vec by 3 hex values
         // 00001111, 00001122, 00002222 -> 00111111, 00222222
-        if new_base == "base64" && self.data.len() % 3 != 0 {
+        if new_init_base == "base64" && self.data.len() % 3 != 0 {
           panic!("Error: hex input does not fit nicely into base64.");
         }
 
@@ -311,12 +292,12 @@ impl Storage {
           }
         }
 
-      } else if self.data_type == "base64" && new_base == "hex" {
+      } else if self.data_type == "base64" && new_init_base == "hex" {
         // base64 -> hex
 
         // if converting to hex, we add elements to the vec by 2 base64 values
         // 00111122 00223333 -> 00001111, 00002222, 00003333
-        if new_base == "hex" && self.data.len() % 2 != 0 {
+        if new_init_base == "hex" && self.data.len() % 2 != 0 {
           panic!("Error: base64 doesn't fit nicely into hex.");
         }
 
@@ -340,7 +321,7 @@ impl Storage {
             // temp has 0 bits (00000000)
           }
         }
-      } else if self.data_type == "hex" && new_base == "ascii" {
+      } else if self.data_type == "hex" && new_init_base == "ascii" {
         // hex -> ascii
         if self.data.len() % 2 != 0 {
           panic!("Error: hex doesn't fit nicely into an ASCII string");
@@ -359,7 +340,7 @@ impl Storage {
             // temp has 0 bits (00000000)
           } 
         }
-      } else if self.data_type == "ascii" && new_base == "hex" {
+      } else if self.data_type == "ascii" && new_init_base == "hex" {
         // ascii -> hex
         for item in &self.data {
           // push first 4 bits to vec (****0000) >> 4 = (0000****)
@@ -367,7 +348,7 @@ impl Storage {
           // push last 4 bits to vec (0000****)
           output.push(item & 0x0F);
         }
-      } else if self.data_type == "base64" && new_base == "ascii" {
+      } else if self.data_type == "base64" && new_init_base == "ascii" {
         // base64 -> ascii
         if self.data.len() % 4 != 0 {
           panic!("Error: base64 doesn't fit nicely into an ASCII string");
@@ -402,7 +383,7 @@ impl Storage {
             // temp is now 00000000
           }
         }
-      } else if self.data_type == "ascii" && new_base == "base64" {
+      } else if self.data_type == "ascii" && new_init_base == "base64" {
         // ascii -> base64
         for (i, item) in self.data.iter().enumerate() {
           if i%3 == 0 {
@@ -431,10 +412,12 @@ impl Storage {
             // temp is now 00000000
           }
         }
+      } else {
+        panic!("Error: unsupported opeartion to convert {} base into {} base", self.data_type, new_init_base);
       }
 
       self.data = output;
-      self.data_type = new_base.to_string();
+      self.data_type = new_init_base.to_string();
     }
   }
 }
@@ -444,18 +427,23 @@ impl Storage {
 mod storage_unit_tests {
   use super::*;
 
-  /* - Implement?
+  // TEST EMPTY CONSTRUCTOR
   #[test]
   fn create_blank_storage() {
     let s: Storage = Storage::new();
+    assert_eq!("", s.to_string());
   }
-  */
+
+  #[test]
+  fn check_invalid_hex_operation() {
+    assert_eq!("", "");
+  }
   
   #[test]
   fn check_valid_hex_to_string() {
     // check every possible character in hex string
     // check uppercase hex characters go to lowercase
-    let s: Storage = Storage::new(&"0123456789ABCDEFabcdef".to_string(), &"hex".to_string());
+    let s: Storage = Storage::new_init(&"0123456789ABCDEFabcdef".to_string(), &"hex".to_string());
     assert_eq!("0123456789abcdefabcdef", s.to_string());
   }
 
@@ -463,12 +451,12 @@ mod storage_unit_tests {
   #[should_panic]
   fn check_invalid_hex_to_string() {
     // check invalid character in hex string
-    let _s: Storage = Storage::new(&"ghijklmnop".to_string(), &"hex".to_string());
+    let _s: Storage = Storage::new_init(&"ghijklmnop".to_string(), &"hex".to_string());
   }
   
   #[test]
   fn check_base64_to_string() {
-    let s: Storage = Storage::new(&"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+".to_string(), &"base64".to_string());
+    let s: Storage = Storage::new_init(&"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+".to_string(), &"base64".to_string());
     assert_eq!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+", s.to_string());
   }
 
@@ -476,18 +464,18 @@ mod storage_unit_tests {
   #[should_panic]
   fn check_invalid_base64_to_string() {
     // check invalid character in hex string
-    let _s: Storage = Storage::new(&"!@#$*^)($%@_".to_string(), &"base64".to_string());
+    let _s: Storage = Storage::new_init(&"!@#$*^)($%@_".to_string(), &"base64".to_string());
   }
 
   #[test]
   fn check_ascii_to_string() {
-    let s: Storage = Storage::new(&"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()".to_string(), &"ascii".to_string());
+    let s: Storage = Storage::new_init(&"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()".to_string(), &"ascii".to_string());
     assert_eq!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", s.to_string());
   }
 
   #[test]
   fn check_get_data_hex() {
-    let hex = Storage::new(&"0123456789ABCDEFabcdef".to_string(), &"hex".to_string());
+    let hex = Storage::new_init(&"0123456789ABCDEFabcdef".to_string(), &"hex".to_string());
     let test_hex = vec!(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F);
     assert_eq!(&test_hex, hex.get_data());
     assert_eq!(test_hex, Storage::build_data(&"0123456789ABCDEFabcdef".to_string(), &"hex".to_string()));
@@ -496,7 +484,7 @@ mod storage_unit_tests {
 
   #[test]
   fn check_get_data_base64() {
-    let base64 = Storage::new(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".to_string(), &"base64".to_string());
+    let base64 = Storage::new_init(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".to_string(), &"base64".to_string());
     let test_base64: Vec<u8> = (0u8..64).collect();
 
     assert_eq!(&test_base64, base64.get_data());
@@ -506,7 +494,7 @@ mod storage_unit_tests {
 
   #[test]
   fn check_get_data_ascii() {
-    let base64 = Storage::new(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".to_string(), &"base64".to_string());
+    let base64 = Storage::new_init(&"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".to_string(), &"base64".to_string());
     let test_base64: Vec<u8> = (0u8..64).collect();
 
     assert_eq!(&test_base64, base64.get_data());
@@ -516,34 +504,42 @@ mod storage_unit_tests {
 
   #[test]
   fn check_hamming_distance_ascii() {
-    let lhs = Storage::new(&"this is a test".to_string(), &"ascii".to_string());
-    let rhs = Storage::new(&"wokka wokka!!!".to_string(), &"ascii".to_string());
+    let lhs = Storage::new_init(&"this is a test".to_string(), &"ascii".to_string());
+    let rhs = Storage::new_init(&"wokka wokka!!!".to_string(), &"ascii".to_string());
 
     assert_eq!(37, Storage::hamming_distance(&lhs, &rhs));
   }
 
   #[test]
   fn check_hamming_distance_hex() {
-    let lhs = Storage::new(&"0123456789ABCDEF".to_string(), &"hex".to_string());
-    let rhs = Storage::new(&"FEDCBA9876543210".to_string(), &"hex".to_string());
+    let lhs = Storage::new_init(&"0123456789ABCDEF".to_string(), &"hex".to_string());
+    let rhs = Storage::new_init(&"FEDCBA9876543210".to_string(), &"hex".to_string());
 
     assert_eq!(64, Storage::hamming_distance(&lhs, &rhs));
   }
 
   #[test]
   fn check_hamming_distance_base64() {
-    let lhs = Storage::new(&"ABCDEF".to_string(), &"base64".to_string());
-    let rhs = Storage::new(&"abcdef".to_string(), &"base64".to_string());
+    let lhs = Storage::new_init(&"ABCDEF".to_string(), &"base64".to_string());
+    let rhs = Storage::new_init(&"abcdef".to_string(), &"base64".to_string());
 
     assert_eq!(20, Storage::hamming_distance(&lhs, &rhs));
   }
 
+  // TODO: write tests for XOR (full + repeating)
+  #[test]
+  fn check_xor_full_noref() {
+    assert_eq!("", "");
+  }
+
   
+  // TODO: write tests for change_base
+  // TODO: write tests for char_to_u8 and u8_to_char 
 }
 
 /*
   // Test 1
-  let hex1 = storage::Storage::new(&"0123456789ABCDEF".to_string(), &"hex".to_string());
+  let hex1 = storage::Storage::new_init(&"0123456789ABCDEF".to_string(), &"hex".to_string());
   let test_hex1 = vec!(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F);
   println!("Test 1 -- testing str_to_vec");
   println!("output = Vec<u8> {{01, 23, 45, 67, 89, AB, CD, EF}}");
@@ -552,7 +548,7 @@ mod storage_unit_tests {
   println!();
 
   // Test 2
-  let hex2 = storage::Storage::new(&"012".to_string(), &"hex".to_string());
+  let hex2 = storage::Storage::new_init(&"012".to_string(), &"hex".to_string());
   let test_hex2 = vec!(0x00, 0x01, 0x02);
   println!("Test 2 -- odd str_to_vec"); 
   println!("output = Vec<u8> {{0x01, 0x20}}");
@@ -560,7 +556,7 @@ mod storage_unit_tests {
   println!();
   
   // Test 3
-  let mut hex3 = storage::Storage::new(&"49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d".to_string(), &"hex".to_string());
+  let mut hex3 = storage::Storage::new_init(&"49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d".to_string(), &"hex".to_string());
   println!("Test 3 -- testing str_to_vec and print_hex_vec");
   println!("Ans: 49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d");
   print!("Res: ");

@@ -11,7 +11,7 @@ use std::io::prelude::*;
  * Return: String - output of converting hex string to base64 string
  */
 pub fn hex_to_base64(hex_str: &str) -> String {
-  let mut s = storage::Storage::new(&hex_str, &"hex".to_string());
+  let mut s = storage::Storage::new_init(&hex_str, &"hex".to_string());
 
   s.change_base(&"base64".to_string());
 
@@ -29,10 +29,10 @@ pub fn hex_to_base64(hex_str: &str) -> String {
  * Return: String - output of xor operation on lhs_str and rhs_str 
  */
 pub fn fixed_xor(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) -> String {
-  let lhs = storage::Storage::new(&lhs_str, &lhs_type);
-  let rhs = storage::Storage::new(&rhs_str, &rhs_type);
+  let lhs = storage::Storage::new_init(&lhs_str, &lhs_type);
+  let rhs = storage::Storage::new_init(&rhs_str, &rhs_type);
 
-  let ans = lhs ^ rhs;
+  let ans = &lhs ^ &rhs;
 
   ans.to_string()
 }
@@ -60,7 +60,7 @@ pub fn char_freq(str_inp: &str) -> i32 {
  * Return: (String, Char) - (hidden message, key that was used)
  */
 pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
-  let s = storage::Storage::new(&str_inp, &str_type);
+  let s = storage::Storage::new_init(&str_inp, &str_type);
 
   let mut result_string: String = s.to_string();
   let mut result_char: char = '0';
@@ -68,7 +68,7 @@ pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
   let mut tmp_freq: i32;
 
   for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
-    let mut char_obj = storage::Storage::new(&i.to_string(), &"ascii");  
+    let mut char_obj = storage::Storage::new_init(&i.to_string(), &"ascii");  
     char_obj.change_base(&"hex".to_string());
     let mut ans = &s ^ &char_obj;
     ans.change_base(&"ascii".to_string());
@@ -113,10 +113,10 @@ pub fn detect_single_character_xor(filename: &str) -> (String, char, i32) {
   // we are creating a new char_obj every line * every char (60*(26+26+10))= 3720
   // we are creating a ans every line * every char (60*(26+26+10)) = 3720
   for l in contents.lines() {
-    let mut obj = storage::Storage::new(&l, &"hex");
+    let mut obj = storage::Storage::new_init(&l, &"hex");
 
     for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
-      let mut char_obj = storage::Storage::new(&i.to_string(), &"ascii");  
+      let mut char_obj = storage::Storage::new_init(&i.to_string(), &"ascii");  
       char_obj.change_base(&"hex".to_string());
       let mut ans = &obj ^ &char_obj;
       ans.change_base(&"ascii".to_string());
@@ -146,10 +146,10 @@ pub fn detect_single_character_xor(filename: &str) -> (String, char, i32) {
  */
 pub fn repeating_key_xor_encrypt(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) -> String {
   // TODO: handle \n -- newlines
-  let lhs = storage::Storage::new(&lhs_str, &lhs_type);
-  let rhs = storage::Storage::new(&rhs_str, &rhs_type);
+  let lhs = storage::Storage::new_init(&lhs_str, &lhs_type);
+  let rhs = storage::Storage::new_init(&rhs_str, &rhs_type);
   
-  let mut ans = lhs ^ rhs;
+  let mut ans = &lhs ^ &rhs;
 
   ans.change_base(&"hex".to_string());
 
@@ -181,9 +181,11 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   f.read_to_string(&mut contents)
     .expect("Error: Something went wrong when reading the file");
 
+  // get rid of newlines in contents
+
   // put first line of the file in keysize_obj
   let first_line = &contents.lines().next().expect("line couldn't be read");
-  let mut keysize_obj = storage::Storage::new(&first_line, &"base64".to_string());
+  let mut keysize_obj = storage::Storage::new_init(&first_line, &"base64".to_string());
   keysize_obj.change_base(&"hex".to_string());
   let first_line_hex = keysize_obj.to_string();
 
@@ -193,8 +195,8 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   let mut tmp: f64;
 
   for i in 2..41 {
-    let lhs = storage::Storage::new(&first_line_hex[0..i], &"hex".to_string());
-    let rhs = storage::Storage::new(&first_line_hex[i..2*i], &"hex".to_string());
+    let lhs = storage::Storage::new_init(&first_line_hex[0..i], &"hex".to_string());
+    let rhs = storage::Storage::new_init(&first_line_hex[i..2*i], &"hex".to_string());
 
     tmp = storage::Storage::hamming_distance(&lhs, &rhs) as f64 / i as f64;
     if tmp < min_nor_dist {
@@ -225,12 +227,12 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
 
   for block in &blocks {
     let n = block.len() - block.len() % 4;
-    let mut obj = storage::Storage::new(&block[..n], &"base64");
+    let mut obj = storage::Storage::new_init(&block[..n], &"base64");
     max_freq = 0;
     obj.change_base(&"ascii".to_string());
 
     for ch in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
-      let mut char_obj = storage::Storage::new(&ch.to_string(), &"ascii");
+      let mut char_obj = storage::Storage::new_init(&ch.to_string(), &"ascii");
       let mut ans = &obj ^ &char_obj;
 
       tmp_freq = char_freq(&ans.to_string().as_str());
@@ -242,7 +244,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     key_string.push(key_char);
   }
 
-  let mut key_obj = storage::Storage::new(&key_string.as_str(), &"ascii");
+  let mut key_obj = storage::Storage::new_init(&key_string.as_str(), &"ascii");
   key_obj.change_base(&"base64".to_string());
   
   /*
@@ -251,7 +253,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     conts.push_str(&l);
   }
 
-  let content_obj = storage::Storage::new(&conts, &"base64");
+  let content_obj = storage::Storage::new_init(&conts, &"base64");
   let mut ans = &content_obj ^ &key_obj;
 
   ans.change_base(&"ascii");
@@ -259,7 +261,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   */ 
   for l in contents.lines() {
     if l.len() == 60 {
-      let mut line_obj = storage::Storage::new(&l.to_string(), &"base64");
+      let mut line_obj = storage::Storage::new_init(&l.to_string(), &"base64");
       let mut ans = &line_obj ^ &key_obj;
       ans.change_base(&"ascii".to_string());
       ans.print();
