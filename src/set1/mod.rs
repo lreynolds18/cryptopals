@@ -55,7 +55,8 @@ pub fn char_freq(str_inp: &str) -> i32 {
 
 /* single_byte_xor_cipher -- Set 1, Challenge 3
  * http://cryptopals.com/sets/1/challenges/3
- * The hex string has been XOR'd against a single character. Find the key, decrypt the message.  
+ * The hex string has been XOR'd against a single character. 
+ * Find the key, decrypt the message.  
  * Parameters: filename(&str) - File to detect single-character XOR
  * Return: (String, Char) - (hidden message, key that was used)
  */
@@ -163,12 +164,19 @@ pub fn repeating_key_xor_encrypt(lhs_str: &str, lhs_type: &str, rhs_str: &str, r
  * Algorithm:
  *   Step 1: Let KEYSIZE be the guessed length of the key; try values from 2 to (say) 40. 
  *   Step 2: Write function to compute edit distance/Hamming distance
- *   Step 3: For each KEYSIZE, take the first KEYSIZE worth of bytes, and the second KEYSIZE worth of bytes, and find the edit distance between them. Normalize this result by dividing by KEYSIZE.
- *   Step 4: The KEYSIZE with the smallest normalized edit distance is probably the key. You could proceed perhaps with the smallest 2-3 KEYSIZE values. Or take 4 KEYSIZE blocks instead of 2 and average the distances.
- *   Step 5: Now that you probably know the KEYSIZE: break the ciphertext into blocks of KEYSIZE length.
- *   Step 6: Now transpose the blocks: make a block that is the first byte of every block, and a block that is the second byte of every block, and so on. 
+ *   Step 3: For each KEYSIZE, take the first KEYSIZE worth of bytes, and the second 
+ *           KEYSIZE worth of bytes, and find the edit distance between them.
+ *           Normalize this result by dividing by KEYSIZE.
+ *   Step 4: The KEYSIZE with the smallest normalized edit distance is probably the key. 
+ *           You could proceed perhaps with the smallest 2-3 KEYSIZE values. 
+ *           Or take 4 KEYSIZE blocks instead of 2 and average the distances.
+ *   Step 5: Now that you probably know the KEYSIZE: break the ciphertext into blocks 
+ *           of KEYSIZE length.
+ *   Step 6: Now transpose the blocks: make a block that is the first byte of every block, 
+ *           and a block that is the second byte of every block, and so on. 
  *   Step 7: Solve each block as if it was single-character XOR. You already have code to do this.
- *   Step 8: For each block, the single-byte XOR key that produces the best looking histogram is the repeating-key XOR key byte for that block. Put them together and you have the key. 
+ *   Step 8: For each block, the single-byte XOR key that produces the best looking histogram is 
+ *           the repeating-key XOR key byte for that block. Put them together and you have the key. 
  * Parameters: filename(&str) - File to detect repeating key xor
  * Return: (String, char, i32) - (Secret message, key that was used, key size, line number)
  */
