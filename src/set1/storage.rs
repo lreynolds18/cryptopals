@@ -4,6 +4,7 @@ use std::ops;
 // TODO: ownership? who owns what and why
 // TODO: use .iter().map().collect() instead of for item in &self.data????
 // TODO: clean up change base
+// TODO: use boxes and error checking
 // TODO: write tests for XOR (full + repeating)
 // TODO: write tests for change_base
 // TODO: write tests for char_to_u8 and u8_to_char 
@@ -316,7 +317,7 @@ impl Storage {
         // if converting to hex, we add elements to the vec by 2 base64 values
         // 00111122 00223333 -> 00001111, 00002222, 00003333
         if new_base == "hex" && self.data.len() % 2 != 0 {
-          panic!("Error: base64 does not fit nicely into hex.");
+          panic!("Error: base64 doesn't fit nicely into hex.");
         }
 
         for (i, item) in self.data.iter().enumerate() {
@@ -342,7 +343,7 @@ impl Storage {
       } else if self.data_type == "hex" && new_base == "ascii" {
         // hex -> ascii
         if self.data.len() % 2 != 0 {
-          panic!("Error: the data doesn't fit nicely into an ASCII string");
+          panic!("Error: hex doesn't fit nicely into an ASCII string");
         }
 
         for (i, item) in self.data.iter().enumerate() {
@@ -369,7 +370,7 @@ impl Storage {
       } else if self.data_type == "base64" && new_base == "ascii" {
         // base64 -> ascii
         if self.data.len() % 4 != 0 {
-          panic!("Error: the data doesn't fit nicely into an ASCII string");
+          panic!("Error: base64 doesn't fit nicely into an ASCII string");
         }
 
         for (i, item) in self.data.iter().enumerate() {

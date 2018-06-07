@@ -187,8 +187,8 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   keysize_obj.change_base(&"hex".to_string());
   let first_line_hex = keysize_obj.to_string();
 
-  // Step 1-5
-  let mut keysize: i32 = 0;  
+  // Step 1-4
+  let mut keysize = 0;  
   let mut min_nor_dist: f64 = 1.0f64 / 0.0f64; // set as MAX
   let mut tmp: f64;
 
@@ -198,18 +198,74 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
 
     tmp = storage::Storage::hamming_distance(&lhs, &rhs) as f64 / i as f64;
     if tmp < min_nor_dist {
-      keysize = i as i32;
+      keysize = i;
       min_nor_dist = tmp;
     }
   }
 
-  /*
-  for l in contents.lines() {
-    let mut obj = storage::Storage::new(&l, &"hex");
-    obj.print();
+  // populate empty strings in vector
+  let mut blocks = Vec::new();
+  for _i in 0..keysize {
+    blocks.push(String::new());
   }
-  */
 
-  (String::new(), "idky".to_string(), keysize, 0) 
+  // Step 5-6
+  for l in contents.lines() {
+    for (i, ch) in l.chars().enumerate() {
+      blocks[i % keysize].push(ch);
+    }
+  }
+
+  // Steps 7-8 
+  // results that are going to be returned
+  let mut key_string: String = String::new();
+  let mut key_char: char = ' ';
+  let mut max_freq: i32; // keep track of the winner char_freq
+  let mut tmp_freq: i32; // tmp variable to store char_freq of current string
+
+  for block in &blocks {
+    let n = block.len() - block.len() % 4;
+    let mut obj = storage::Storage::new(&block[..n], &"base64");
+    max_freq = 0;
+    obj.change_base(&"ascii".to_string());
+
+    for ch in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
+      let mut char_obj = storage::Storage::new(&ch.to_string(), &"ascii");
+      let mut ans = &obj ^ &char_obj;
+
+      tmp_freq = char_freq(&ans.to_string().as_str());
+      if tmp_freq > max_freq {
+        key_char = ch;
+        max_freq = tmp_freq;
+      }
+    }
+    key_string.push(key_char);
+  }
+
+  let mut key_obj = storage::Storage::new(&key_string.as_str(), &"ascii");
+  key_obj.change_base(&"base64".to_string());
+  
+  /*
+  let conts = String::new();
+  for l in contents.lines() {
+    conts.push_str(&l);
+  }
+
+  let content_obj = storage::Storage::new(&conts, &"base64");
+  let mut ans = &content_obj ^ &key_obj;
+
+  ans.change_base(&"ascii");
+  ans.print();
+  */ 
+  for l in contents.lines() {
+    if l.len() == 60 {
+      let mut line_obj = storage::Storage::new(&l.to_string(), &"base64");
+      let mut ans = &line_obj ^ &key_obj;
+      ans.change_base(&"ascii".to_string());
+      ans.print();
+    }
+  }
+
+  (String::new(), key_string, keysize as i32, 0) 
 }
 
