@@ -23,7 +23,8 @@ impl<'a> ops::BitXor<&'a Storage> for &'a Storage {
     }
 
     if self.data_type != rhs.data_type {
-      panic!("Error: Storage are not the same type.  LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
+      panic!("Error: Storage are not the same type.  \
+        LHS type is {}. RHS type is {}.", self.data_type, rhs.data_type);
     }
   
     if self.data.len() == rhs.data.len() {
@@ -46,7 +47,8 @@ impl<'a> ops::BitXor<&'a Storage> for &'a Storage {
         data_type: self.get_data_type().to_string()
       }
     } else  {
-      panic!("Error: Storage cannot be XOR'd against each other.  LHS length is {}, RHS length is {}", self.data.len(), rhs.data.len());
+      panic!("Error: Storage cannot be XOR'd against each other.  \
+        LHS length is {}, RHS length is {}", self.data.len(), rhs.data.len());
     }
   }
 }
@@ -130,11 +132,13 @@ impl Storage {
    */
   pub fn hamming_distance(lhs: &Storage, rhs: &Storage) -> i32 {
     if lhs.get_data().len() != rhs.get_data().len() {
-      panic!("Error: cannot compute hamming distance when the strings are not the same length. LHS length is {}, RHS length is {}", lhs.get_data().len(), rhs.get_data().len());
+      panic!("Error: cannot compute hamming distance when the strings are not \
+        the same length. LHS length is {}, RHS length is {}", lhs.get_data().len(), rhs.get_data().len());
     }
 
     if lhs.get_data_type() != rhs.get_data_type() {
-      panic!("Error: cannot compute hamming distance when the data types are not the same.  LHS type is {}, RHS type is {}", lhs.get_data_type(), rhs.get_data_type());
+      panic!("Error: cannot compute hamming distance when the data types are not \
+        the same.  LHS type is {}, RHS type is {}", lhs.get_data_type(), rhs.get_data_type());
     }
 
     let start = match lhs.get_data_type().as_str() {
@@ -149,7 +153,7 @@ impl Storage {
             .map(|(l, r)| {
                 let tmp = l ^ r;
                 let mut c: i32 = 0;
-                let bin: Vec<u8> = vec!(0x90, 0x40, 0x20, 0x10, 0x09, 0x04, 0x02, 0x01);  
+                let bin: Vec<u8> = vec!(0x90, 0x40, 0x20, 0x10, 0x09, 0x04, 0x02, 0x01);
                 for (i, var) in bin.iter().enumerate() {
                   if i >= start { 
                     c += ((tmp & var) >> (7-i as u8)) as i32;
@@ -431,7 +435,8 @@ impl Storage {
           }
         }
       } else {
-        panic!("Error: unsupported opeartion to convert {} base into {} base", self.data_type, new_init_base);
+        panic!("Error: unsupported opeartion to convert {} base into {} base", 
+          self.data_type, new_init_base);
       }
 
       self.data = output;
@@ -474,7 +479,8 @@ mod storage_unit_tests {
   
   #[test]
   fn check_base64_to_string() {
-    let s: Storage = Storage::new_init("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+", "base64");
+    let s: Storage = Storage::new_init(
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+", "base64");
     assert_eq!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+", s.to_string());
   }
 
@@ -487,14 +493,23 @@ mod storage_unit_tests {
 
   #[test]
   fn check_ascii_to_string() {
-    let s: Storage = Storage::new_init("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", "ascii");
-    assert_eq!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", s.to_string());
+    let s: Storage = Storage::new_init(
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", 
+      "ascii"
+    );
+    assert_eq!(
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", 
+      s.to_string()
+    );
   }
 
   #[test]
   fn check_get_data_hex() {
     let hex = Storage::new_init("0123456789ABCDEFabcdef", "hex");
-    let test_hex = vec!(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F);
+    let test_hex = vec!(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 
+                        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0A, 0x0B, 
+                        0x0C, 0x0D, 0x0E, 0x0F
+    );
     assert_eq!(&test_hex, hex.get_data());
     assert_eq!(test_hex, Storage::build_data("0123456789ABCDEFabcdef", "hex"));
     assert_eq!("hex", hex.get_data_type());
@@ -502,21 +517,36 @@ mod storage_unit_tests {
 
   #[test]
   fn check_get_data_base64() {
-    let base64 = Storage::new_init("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", "base64");
+    let base64 = Storage::new_init(
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", 
+      "base64");
     let test_base64: Vec<u8> = (0u8..64).collect();
 
     assert_eq!(&test_base64, base64.get_data());
-    assert_eq!(test_base64, Storage::build_data("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", "base64"));
+    assert_eq!(test_base64, 
+      Storage::build_data(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", 
+        "base64"
+      )
+    );
     assert_eq!("base64", base64.get_data_type());
   }
 
   #[test]
   fn check_get_data_ascii() {
-    let base64 = Storage::new_init("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", "base64");
+    let base64 = Storage::new_init(
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", 
+      "base64"
+    );
     let test_base64: Vec<u8> = (0u8..64).collect();
 
     assert_eq!(&test_base64, base64.get_data());
-    assert_eq!(test_base64, Storage::build_data("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", "base64"));
+    assert_eq!(test_base64, 
+      Storage::build_data(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", 
+        "base64"
+      )
+    );
     assert_eq!("base64", base64.get_data_type());
   }
 
