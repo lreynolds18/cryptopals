@@ -11,9 +11,9 @@ use std::io::prelude::*;
  * Return: String - output of converting hex string to base64 string
  */
 pub fn hex_to_base64(hex_str: &str) -> String {
-  let mut s = storage::Storage::new_init(&hex_str, &"hex".to_string());
+  let mut s = storage::Storage::new_init(&hex_str, &"hex");
 
-  s.change_base(&"base64".to_string());
+  s.change_base(&"base64");
 
   s.to_string()
 }
@@ -69,9 +69,9 @@ pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
 
   for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
     let mut char_obj = storage::Storage::new_init(&i.to_string(), &"ascii");  
-    char_obj.change_base(&"hex".to_string());
+    char_obj.change_base(&"hex");
     let mut ans = &s ^ &char_obj;
-    ans.change_base(&"ascii".to_string());
+    ans.change_base(&"ascii");
     
     tmp_freq = char_freq(&ans.to_string().as_str());
     if tmp_freq > max_freq {
@@ -117,9 +117,9 @@ pub fn detect_single_character_xor(filename: &str) -> (String, char, i32) {
 
     for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
       let mut char_obj = storage::Storage::new_init(&i.to_string(), &"ascii");  
-      char_obj.change_base(&"hex".to_string());
+      char_obj.change_base(&"hex");
       let mut ans = &obj ^ &char_obj;
-      ans.change_base(&"ascii".to_string());
+      ans.change_base(&"ascii");
 
       tmp_freq = char_freq(&ans.to_string().as_str());
       if tmp_freq > max_freq {
@@ -151,7 +151,7 @@ pub fn repeating_key_xor_encrypt(lhs_str: &str, lhs_type: &str, rhs_str: &str, r
   
   let mut ans = &lhs ^ &rhs;
 
-  ans.change_base(&"hex".to_string());
+  ans.change_base(&"hex");
 
   ans.to_string()
 }
@@ -185,8 +185,8 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
 
   // put first line of the file in keysize_obj
   let first_line = &contents.lines().next().expect("line couldn't be read");
-  let mut keysize_obj = storage::Storage::new_init(&first_line, &"base64".to_string());
-  keysize_obj.change_base(&"hex".to_string());
+  let mut keysize_obj = storage::Storage::new_init(&first_line, &"base64");
+  keysize_obj.change_base(&"hex");
   let first_line_hex = keysize_obj.to_string();
 
   // Step 1-4
@@ -195,8 +195,8 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   let mut tmp: f64;
 
   for i in 2..41 {
-    let lhs = storage::Storage::new_init(&first_line_hex[0..i], &"hex".to_string());
-    let rhs = storage::Storage::new_init(&first_line_hex[i..2*i], &"hex".to_string());
+    let lhs = storage::Storage::new_init(&first_line_hex[0..i], &"hex");
+    let rhs = storage::Storage::new_init(&first_line_hex[i..2*i], &"hex");
 
     tmp = storage::Storage::hamming_distance(&lhs, &rhs) as f64 / i as f64;
     if tmp < min_nor_dist {
@@ -229,7 +229,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     let n = block.len() - block.len() % 4;
     let mut obj = storage::Storage::new_init(&block[..n], &"base64");
     max_freq = 0;
-    obj.change_base(&"ascii".to_string());
+    obj.change_base(&"ascii");
 
     for ch in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
       let mut char_obj = storage::Storage::new_init(&ch.to_string(), &"ascii");
@@ -245,7 +245,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   }
 
   let mut key_obj = storage::Storage::new_init(&key_string.as_str(), &"ascii");
-  key_obj.change_base(&"base64".to_string());
+  key_obj.change_base(&"base64");
   
   /*
   let conts = String::new();
