@@ -236,7 +236,7 @@ impl Storage {
 
   /* to_string -- helper function to convert self.data Vec<u8> to string
    * Parameters: void 
-   * Return: out (&str) - Hex/Base64 data in string format 
+   * Return: out (String) - Hex/Base64/Ascii data in string format 
    */
   pub fn to_string(&self) -> String {
     let mut out = String::new();
@@ -246,6 +246,24 @@ impl Storage {
     }
     out
   }
+
+
+  // TODO: implement as_str.  Complains about lifetime
+  /* as_str -- helper function to convert self.data Vec<u8> to &str
+   * Parameters: void 
+   * Return: out (&str) - Hex/Base64 data in string format 
+   */
+  /*
+  pub fn as_str(&self) -> &str {
+    let mut out = String::new();
+
+    for item in &self.data {
+      out.push(Storage::u8_to_char(*item, self.data_type.as_str()));
+    }
+    &out
+  }
+  */
+
 
   /* change_base -- convert old_base to new_init_base
    * handles hex -> base64, base64 -> hex, ascii -> hex, hex -> ascii,
