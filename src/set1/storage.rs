@@ -405,6 +405,51 @@ impl Storage {
       self.data_type = new_init_base.to_string();
     }
   }
+
+  // split storage into two sepearte storages based on keysize
+  pub fn split_on_keysize(&self, keysize: i32) -> (Storage, Storage) {
+    let mut lhs = Vec::new();
+    let mut rhs = Vec::new();
+
+    let l: i32 = self.data.len() as i32;
+    let max: i32 = l - (((l / keysize) % 2) * keysize) - (l % keysize) - 1;
+    println!("{}, {}, {}", l, keysize, l % keysize);
+    println!("{}, {}, {}, {}", l, max, ((l / keysize) % 2) * keysize, l % keysize);
+
+
+    let mut c = 0;
+    let mut left = true;
+    for (i, d) in self.data.iter().cloned().enumerate() {
+      if (i as i32) > max {
+        break;
+      }
+
+      match left {
+        true => lhs.push(d),
+        false => rhs.push(d)
+      };
+
+      c += 1;
+      if c >= keysize {
+        c = 0;
+        left = !left;
+      }
+    }
+
+    println!("{:?}", lhs);
+    println!("{:?}", rhs);
+
+    (
+      Storage {
+        data: lhs,
+        data_type: self.get_data_type().to_string()
+      },
+      Storage {
+        data: rhs,
+        data_type: self.get_data_type().to_string()
+      } 
+    )
+  }
 }
 
 // XOR implementation for Storage ^ Storage = Storage
@@ -702,6 +747,7 @@ mod tests {
     }
   }
 
+
   // TEST change base - change_base
   #[test]
   fn check_hex_to_base64() {
@@ -730,21 +776,42 @@ mod tests {
   #[test]
   #[should_panic]
   fn check_invalid_change_base() {
-    let lhs: Storage = Storage::new();
-    let rhs: Storage = Storage::new();
-    &lhs ^ &rhs;
+    let mut s = Storage::new();
+    s.change_base("hex");
   }
 
   #[test]
   fn check_change_base() {
-    let mut hex3 = Storage::new_init(
+    let mut hex = Storage::new_init(
       "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d", 
       "hex"
     );
-    hex3.change_base(&"base64".to_string());
-    assert_eq!("SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t", hex3.to_string());
-    hex3.change_base(&"hex".to_string());
-    assert_eq!("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d", hex3.to_string());
+    hex.change_base("base64");
+    assert_eq!("SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t", hex.to_string());
+    hex.change_base("hex");
+    assert_eq!("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d", hex.to_string());
+  }
+
+
+  // TEST SPLIT ON KEYSIZE - split_on_keysize 
+  #[test]
+  fn check_split_on_keysize() {
+    let s = Storage::new_init("hello world", "ascii");
+    let ans_vec = vec!(
+      vec!("hlowr", "el ol"), // 1- ('hlowr', 'el ol') -- not included: d 
+      vec!("heo ", "llwo"),   // 2- ('heo ' 'llwo') -- not included: rld
+      vec!("hel", "lo "),     // 3- ('hel', 'lo ') -- not included: world
+      vec!("hell", "o wo"),   // 4- ('hell', 'o wo') -- not included:  rld
+      vec!("hello", " worl")  // 5- ('hello', ' worl') -- not included: d
+    );
+
+    for i in 1usize..6usize {
+      let (lhs, rhs) = s.split_on_keysize(i as i32);
+      lhs.print();
+      rhs.print();
+      assert_eq!(ans_vec[i-1][0], lhs.to_string());
+      assert_eq!(ans_vec[i-1][1], rhs.to_string());
+    }
   }
 
 
@@ -752,6 +819,7 @@ mod tests {
   // TODO: write tests for XOR (full + repeating)
   #[test]
   fn check_xor_full_noref() {
+     
     assert_eq!("", "");
   }
 
@@ -770,4 +838,7 @@ mod tests {
     let rhs: Storage = Storage::new();
     &lhs ^ &rhs;
   }
+
+
+
 }
