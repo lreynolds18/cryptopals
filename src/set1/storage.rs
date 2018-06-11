@@ -431,10 +431,7 @@ impl Storage {
    */
   pub fn split_into_blocks(&self, keysize: usize) -> Vec<Storage> {
     // create an empty Vec<Vec<u8>> with the length of keysize
-    let mut holder: Vec<Vec<u8>> = vec!();
-    for _i in 0..keysize {
-      holder.push(vec!());
-    }
+    let mut holder: Vec<Vec<u8>> = (0..keysize).map(|_| vec!()).collect();
 
     // add the nth item to the respective vec in holder
     // if data contains "helloworld" then w/ keysize 5
