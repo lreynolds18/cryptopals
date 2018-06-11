@@ -349,7 +349,7 @@ impl Storage {
             // temp is now ********
             output.push(temp);
             // temp is now 00000000
-            temp = (item & 0x0F) << 2;
+            temp = (item & 0x0F) << 4;
             // temp is now ****0000
           } else if i%4 == 2 {
             // temp start at ****0000
@@ -453,11 +453,6 @@ impl Storage {
    * Return: out Vec<Storage> - Vector of Storage where each Storage contains the nth elements in each keysize
    */
   pub fn split_into_blocks(&self, keysize: usize) -> Vec<Storage> {
-    // TODO: add some kind of functionality incase len doesn't evenly go into keysize
-    if self.data.len() % keysize != 0 {
-      panic!("Error: cannot evenly distribute blocks by keysize.  Keysize is {}. Data.len() is {}", keysize, self.data.len());
-    }
-
     // create an empty Vec<Vec<u8>> with the length of keysize
     let mut holder: Vec<Vec<u8>> = vec!();
     for _i in 0..keysize {
@@ -785,29 +780,46 @@ mod tests {
 
 
   // TEST change base - change_base
-  // TODO: test change base
   #[test]
   fn check_hex_to_base64() {
+    let mut s = Storage::new_init("0123456789abcdefFf", "hex"); 
+    s.change_base("base64");
+    assert_eq!("ASNFZ4mrze//", s.to_string());
   }
 
   #[test]
   fn check_base64_to_hex() {
+    let mut s = Storage::new_init("ABCabc0123+/", "base64");
+    s.change_base("hex");
+    assert_eq!("00109a6dcd35db7fbf", s.to_string());
   }
 
   #[test]
   fn check_hex_to_ascii() {
+    let mut s = Storage::new_init("4c75636173", "hex");
+    s.change_base("ascii");
+    assert_eq!("Lucas", s.to_string());
   }
 
   #[test]
   fn check_ascii_to_hex() {
+    let mut s = Storage::new_init("Hello World!", "ascii");
+    s.change_base("hex");
+    assert_eq!("48656c6c6f20576f726c6421", s.to_string());
   }
 
   #[test]
   fn check_base64_to_ascii() {
+    let mut s = Storage::new_init("aGVsbG9vb29vIHdvcmxk", "base64");
+    s.change_base("ascii");
+    assert_eq!("hellooooo world", s.to_string());
   }
 
   #[test]
   fn check_ascii_to_base64() {
+    let mut s = Storage::new_init("hello world!", "ascii");
+    s.change_base("base64");
+    assert_eq!("aGVsbG8gd29ybGQh", s.to_string());
   }
 
   #[test]

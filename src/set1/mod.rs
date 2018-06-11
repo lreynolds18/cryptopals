@@ -229,6 +229,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   }
 
   let mut file_obj = storage::Storage::new_init(&file_contents, "base64");
+  println!("{}", file_obj.get_data().len());
   file_obj.change_base("ascii");
   file_obj.print();
   file_obj.change_base("base64");
