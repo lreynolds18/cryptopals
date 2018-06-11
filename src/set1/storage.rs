@@ -406,42 +406,25 @@ impl Storage {
     }
   }
 
-  /* split_by_keysize -- returns two storages with the first keysize elements
-   * and the second keysize elements.
-   * Parameters: keysize (usize) - Number of characters that we want to split by
+  /* split_by_keysize -- returns two storages with the first keysize of elements in
+   * the first storage and the second keysize of elements in the second storage.
+   * Parameters: keysize (usize) - Number of characters in each storage 
    * Return: (Storage, Storage) - lhs is first keysize elements in a Storage and rhs 
    * is second keysize elements in a Storage
    */
   pub fn split_by_keysize(&self, keysize: usize) -> (Storage, Storage) {
-    // TODO: make sure indexing is correct (2 * keysize) 
-    // TODO: for loop can forsure be written better
-    // TODO: vec or tuple for return?
-    // TODO: write description a little better
 
     if self.data.len() < 2 * keysize {
       panic!("Error: not enough items in data");
     }
 
-    let mut lhs: Vec<u8> = vec!();
-    let mut rhs: Vec<u8> = vec!();
-
-    for (i, d) in self.data.iter().cloned().enumerate() {
-      if i < keysize {
-        lhs.push(d);
-      } else if i < keysize * 2 {
-        rhs.push(d);
-      } else {
-        break;
-      }
-    }
-
     (
       Storage {
-        data: lhs,
+        data: self.data[0..keysize].to_vec(),
         data_type: self.get_data_type().to_string()
       },
       Storage {
-        data: rhs,
+        data: self.data[keysize..2*keysize].to_vec(),
         data_type: self.get_data_type().to_string()
       }
     )
@@ -861,6 +844,15 @@ mod tests {
       assert_eq!(ans_vec[i-1][1], rhs.to_string());
     }
   }
+
+  #[test]
+  #[should_panic]
+  fn check_invalid_split_by_keysize() {
+    let s = Storage::new_init("hello world", "ascii");
+
+    s.split_by_keysize(6);
+  }
+    
 
   // TEST SPLIT INTO BLOCKS - split_into_blocks
   // TODO: add tests and test invalid cases
