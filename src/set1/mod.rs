@@ -2,6 +2,7 @@ pub mod storage;
 
 use std::fs::File;
 use std::io::prelude::*;
+use std::collections::HashMap;
 
 /* hex_to_base64 -- Set 1, Challenge 1
  * http://cryptopals.com/sets/1/challenges/1
@@ -42,12 +43,43 @@ pub fn fixed_xor(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) -
  * Parameters: str_inp (&str) - input string (ascii)
  * Return: f64 - character frequency score
  */
-pub fn char_freq(str_inp: &str) -> i32 {
-  let mut count: i32 = 0;
-  for c in str_inp.chars() {
-    if c.is_alphanumeric() || c == ' ' || c == '\'' {
-      count += 1;
-    }
+pub fn char_freq(str_inp: &str) -> f32 {
+  // english char freq pulled from wikipedia
+  let freq: HashMap<char, f32> = [
+    ('a', 8.167),
+    ('b', 1.492),
+    ('c', 2.782),
+    ('d', 4.253),
+    ('e', 12.702),
+    ('f', 2.228),
+    ('g', 2.015),
+    ('h', 6.094),
+    ('i', 6.966),
+    ('j', 0.153),
+    ('k', 0.772),
+    ('l', 4.025),
+    ('m', 2.406),
+    ('n', 6.749),
+    ('o', 7.507),
+    ('p', 1.929),
+    ('q', 0.095),
+    ('r', 5.987),
+    ('s', 6.327),
+    ('t', 9.056),
+    ('u', 2.758),
+    ('v', 0.978),
+    ('w', 2.36),
+    ('x', 0.15),
+    ('y', 1.974),
+    ('z', 0.074),
+    (' ', 10.000)
+  ].iter().cloned().collect();
+
+  let mut count: f32 = 0.0_f32;
+  for c in str_inp.to_lowercase().chars() {
+    if let Some(f) = freq.get(&c) {
+      count += f;
+    } 
   }
   count
 }
@@ -65,8 +97,8 @@ pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
 
   let mut result_string: String = s.to_string();
   let mut result_char: char = '0';
-  let mut max_freq: i32 = 0;
-  let mut tmp_freq: i32;
+  let mut max_freq: f32 = 0_f32;
+  let mut tmp_freq: f32;
 
   for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
     let mut char_obj = storage::Storage::new_init(&i.to_string(), "ascii");
@@ -105,8 +137,8 @@ pub fn detect_single_character_xor(filename: &str) -> (String, char, i32) {
   let mut result_char: char = ' ';
   let mut result_num: i32 = 0;
 
-  let mut max_freq: i32 = 0; // keep track of the winner char_freq
-  let mut tmp_freq: i32; // tmp variable to store char_freq of current string
+  let mut max_freq: f32 = 0_f32; // keep track of the winner char_freq
+  let mut tmp_freq: f32; // tmp variable to store char_freq of current string
   let mut count: i32 = 0; // keep track of line number
 
   // can we do better?
@@ -190,58 +222,68 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     .expect("Error: Something went wrong when reading the file");
 
   // get rid of newlines in contents
+  let mut file_contents = String::new();
+  // get rid of all the new lines
+  for line in contents.lines() {
+    file_contents.push_str(line);
+  }
 
-  // put first line of the file in keysize_obj
-  let first_line = &contents.lines().next().expect("line couldn't be read");
-  let mut keysize_obj = storage::Storage::new_init(first_line, "base64");
-  keysize_obj.change_base("hex");
-  let first_line_hex = keysize_obj.to_string();
+  let mut file_obj = storage::Storage::new_init(&file_contents, "base64");
+  file_obj.change_base("ascii");
+  file_obj.print();
+  file_obj.change_base("base64");
+  // file_obj.change_base("hex");
 
-  // Step 1-4
-  let mut keysize = 0;  
-  let mut min_nor_dist: f64 = 1.0f64 / 0.0f64; // set as MAX
+  // Step 1-4 - Figure out keysize
+  let mut keysize: Vec<usize> = vec!(0, 0, 0);  
+  let mut min_nor_dist: Vec<f64> = vec!(1.0f64 / 0.0f64, 1.0f64 / 0.0f64, 1.0f64 / 0.0f64); // set as MAX
   let mut tmp: f64;
+  let mut t = vec!();
 
-  for i in 2..41 {
-    let lhs = storage::Storage::new_init(&first_line_hex[0..i], "hex");
-    let rhs = storage::Storage::new_init(&first_line_hex[i..2*i], "hex");
+  for i in 2usize..41usize {
+    let (lhs, rhs) = file_obj.split_by_keysize(i);
 
     tmp = storage::Storage::hamming_distance(&lhs, &rhs) as f64 / i as f64;
-    if tmp < min_nor_dist {
-      keysize = i;
-      min_nor_dist = tmp;
+    t.push(tmp);
+    if tmp < min_nor_dist[0] {
+      min_nor_dist[2] = min_nor_dist[1];
+      min_nor_dist[1] = min_nor_dist[0];
+      min_nor_dist[0] = tmp;
+      keysize[2] = keysize[1];
+      keysize[1] = keysize[0];
+      keysize[0] = i;
+    } else if tmp < min_nor_dist[1] {
+      min_nor_dist[2] = min_nor_dist[1];
+      min_nor_dist[1] = tmp;
+      keysize[2] = keysize[1];
+      keysize[1] = i;
+    } else if tmp < min_nor_dist[2] {
+      min_nor_dist[2] = tmp; 
+      keysize[2] = i;
     }
   }
-
-  // populate empty strings in vector
-  let mut blocks = Vec::new();
-  for _i in 0..keysize {
-    blocks.push(String::new());
-  }
-
-  // Step 5-6
-  for l in contents.lines() {
-    for (i, ch) in l.chars().enumerate() {
-      blocks[i % keysize].push(ch);
-    }
-  }
+  println!("{:?}", keysize);
+  println!("{:?}", t);
+  
+  // Step 6
+  let blocks = file_obj.split_into_blocks(keysize[0]);
 
   // Steps 7-8 
   // results that are going to be returned
   let mut key_string: String = String::new();
   let mut key_char: char = ' ';
-  let mut max_freq: i32; // keep track of the winner char_freq
-  let mut tmp_freq: i32; // tmp variable to store char_freq of current string
+  let mut max_freq: f32; // keep track of the winner char_freq
+  let mut tmp_freq: f32; // tmp variable to store char_freq of current string
 
-  for block in &blocks {
-    let n = block.len() - block.len() % 4;
-    let mut obj = storage::Storage::new_init(&block[..n], "base64");
-    max_freq = 0;
-    obj.change_base("ascii");
+  for block in blocks.iter() {
+    let mut b = storage::Storage::new_init(&block.to_string().to_string(), block.get_data_type());
+    max_freq = 0_f32;
+    println!("{}", b.get_data().len());
+    b.change_base("ascii");
 
     for ch in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
       let mut char_obj = storage::Storage::new_init(&ch.to_string(), "ascii");
-      let mut ans = &obj ^ &char_obj;
+      let mut ans = &b ^ &char_obj;
 
       tmp_freq = char_freq(ans.to_string().as_str());
       if tmp_freq > max_freq {
@@ -252,30 +294,12 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     key_string.push(key_char);
   }
 
-  let mut key_obj = storage::Storage::new_init(&key_string.as_str(), "ascii");
-  key_obj.change_base("base64");
-  
-  /*
-  let conts = String::new();
-  for l in contents.lines() {
-    conts.push_str(&l);
-  }
+  let key_obj = storage::Storage::new_init(&key_string.as_str(), "ascii");
+  println!("HERE");
+  file_obj.change_base("ascii");
+  let ans = &file_obj ^ &key_obj;
+  ans.print(); 
 
-  let content_obj = storage::Storage::new_init(&conts, &"base64");
-  let mut ans = &content_obj ^ &key_obj;
-
-  ans.change_base(&"ascii");
-  ans.print();
-  */ 
-  for l in contents.lines() {
-    if l.len() == 60 {
-      let mut line_obj = storage::Storage::new_init(&l.to_string(), "base64");
-      let mut ans = &line_obj ^ &key_obj;
-      ans.change_base("ascii");
-      ans.print();
-    }
-  }
-
-  (String::new(), key_string, keysize as i32, 0) 
+  (String::new(), key_string, keysize[2] as i32, 0) 
 }
 
