@@ -1,10 +1,10 @@
 use std::ops;
 
 // TODO: ownership? who owns what and why
-// TODO: use .iter().map().collect() instead of for item in &self.data????
 // TODO: clean up change base
 // TODO: use boxes and error checking
 // TODO: figure out error message in constructor
+// TODO: as_str() should we implement??? cannot borrow String because the struct obj could go out of scope
 
 pub struct Storage {
   data: Vec<u8>,
@@ -49,12 +49,9 @@ impl Storage {
       panic!("Error: invalid type ({})", data_type);
     }
 
-    let mut data: Vec<u8> = Vec::new();
-
-    for c in str_inp.chars() {
-      data.push(Storage::char_to_u8(c, data_type));
-    }
-    data
+    str_inp.chars()
+      .map(|c| Storage::char_to_u8(c, data_type))
+      .collect()
   }
 
 
@@ -205,12 +202,9 @@ impl Storage {
    * Return: out (String) - Hex/Base64/Ascii data in string format 
    */
   pub fn to_string(&self) -> String {
-    let mut out = String::new();
-
-    for item in &self.data {
-      out.push(Storage::u8_to_char(*item, self.data_type.as_str()));
-    }
-    out
+    self.data.iter()
+      .map(|i| Storage::u8_to_char(*i, self.data_type.as_str()))
+      .collect()
   }
 
 
@@ -452,17 +446,12 @@ impl Storage {
       holder[i % keysize].push(d);
     }
 
-    // create Storage with the results
-    let mut out: Vec<Storage> = vec!();
-    for v in &holder {
-      out.push(
-        Storage {
-          data: v.to_vec(),
-          data_type: self.get_data_type().to_string()
-        }
-      );
-    }
-    out
+    holder.iter()
+          .map(|v| Storage {
+            data: v.to_vec(),
+            data_type: self.get_data_type().to_string()
+          })
+          .collect() 
   }
 }
 
@@ -492,14 +481,11 @@ impl<'a> ops::BitXor<&'a Storage> for &'a Storage {
         data_type: self.get_data_type().to_string()
       }
     } else if self.data.len() > rhs.data.len() {
-      let mut out: Vec<u8> = Vec::new();
-      let rhs_len: i64 = rhs.data.len() as i64;
-        
-      for (i, item) in self.data.iter().enumerate() {
-        out.push(item ^ rhs.data[((i as i64) % rhs_len) as usize]);
-      }
       Storage {
-        data: out,
+        data: self.data.iter()
+                       .enumerate()
+                       .map(|(i, item)| item ^ rhs.data[i % rhs.data.len()])
+                       .collect(),
         data_type: self.get_data_type().to_string()
       }
     } else  {
