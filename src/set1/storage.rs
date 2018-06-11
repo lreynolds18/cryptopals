@@ -406,38 +406,34 @@ impl Storage {
     }
   }
 
-  // split storage into two sepearte storages based on keysize
-  pub fn split_on_keysize(&self, keysize: i32) -> (Storage, Storage) {
-    let mut lhs = Vec::new();
-    let mut rhs = Vec::new();
+  /* split_by_keysize -- returns two storages with the first keysize elements
+   * and the second keysize elements.
+   * Parameters: keysize (usize) - Number of characters that we want to split by
+   * Return: (Storage, Storage) - lhs is first keysize elements in a Storage and rhs 
+   * is second keysize elements in a Storage
+   */
+  pub fn split_by_keysize(&self, keysize: usize) -> (Storage, Storage) {
+    // TODO: make sure indexing is correct (2 * keysize) 
+    // TODO: for loop can forsure be written better
+    // TODO: vec or tuple for return?
+    // TODO: write description a little better
 
-    let l: i32 = self.data.len() as i32;
-    let max: i32 = l - (((l / keysize) % 2) * keysize) - (l % keysize) - 1;
-    println!("{}, {}, {}", l, keysize, l % keysize);
-    println!("{}, {}, {}, {}", l, max, ((l / keysize) % 2) * keysize, l % keysize);
-
-
-    let mut c = 0;
-    let mut left = true;
-    for (i, d) in self.data.iter().cloned().enumerate() {
-      if (i as i32) > max {
-        break;
-      }
-
-      match left {
-        true => lhs.push(d),
-        false => rhs.push(d)
-      };
-
-      c += 1;
-      if c >= keysize {
-        c = 0;
-        left = !left;
-      }
+    if self.data.len() < 2 * keysize {
+      panic!("Error: not enough items in data");
     }
 
-    println!("{:?}", lhs);
-    println!("{:?}", rhs);
+    let mut lhs: Vec<u8> = vec!();
+    let mut rhs: Vec<u8> = vec!();
+
+    for (i, d) in self.data.iter().cloned().enumerate() {
+      if i < keysize {
+        lhs.push(d);
+      } else if i < keysize * 2 {
+        rhs.push(d);
+      } else {
+        break;
+      }
+    }
 
     (
       Storage {
@@ -447,8 +443,48 @@ impl Storage {
       Storage {
         data: rhs,
         data_type: self.get_data_type().to_string()
-      } 
+      }
     )
+  }
+
+
+  /* split_into_blocks -- splits a storage into keysizes and then splits each keysize into blocks
+   * Parameters: keysize (usize) - Number of characters that we want to split by
+   * Return: out Vec<Storage> - Vector of Storage where each Storage contains the nth elements in each keysize
+   */
+  pub fn split_into_blocks(&self, keysize: usize) -> Vec<Storage> {
+    // TODO: add some kind of functionality incase len doesn't evenly go into keysize
+    if self.data.len() % keysize != 0 {
+      panic!("Error: cannot evenly distribute blocks by keysize.  Keysize is {}. Data.len() is {}", keysize, self.data.len());
+    }
+
+    // create an empty Vec<Vec<u8>> with the length of keysize
+    let mut holder: Vec<Vec<u8>> = vec!();
+    for _i in 0..keysize {
+      holder.push(vec!());
+    }
+
+    // add the nth item to the respective vec in holder
+    // if data contains "helloworld" then w/ keysize 5
+    // the result should be
+    // "hw", "eo", "lr", "ll", "od"
+    // because we split "helloworld" into "hello" and "world"
+    // then we append the first characters to the first vec...
+    for (i, d) in self.data.iter().cloned().enumerate() {
+      holder[i % keysize].push(d);
+    }
+
+    // create Storage with the results
+    let mut out: Vec<Storage> = vec!();
+    for v in &holder {
+      out.push(
+        Storage {
+          data: v.to_vec(),
+          data_type: self.get_data_type().to_string()
+        }
+      );
+    }
+    out
   }
 }
 
@@ -749,6 +785,7 @@ mod tests {
 
 
   // TEST change base - change_base
+  // TODO: test change base
   #[test]
   fn check_hex_to_base64() {
   }
@@ -793,30 +830,50 @@ mod tests {
   }
 
 
-  // TEST SPLIT ON KEYSIZE - split_on_keysize 
+  // TEST SPLIT ON KEYSIZE INTO SEPERATE STRING - split_on_keysize_into_seperate_string 
+  // TODO: add tests and test invalid cases
   #[test]
-  fn check_split_on_keysize() {
+  fn check_split_by_keysize() {
     let s = Storage::new_init("hello world", "ascii");
     let ans_vec = vec!(
-      vec!("hlowr", "el ol"), // 1- ('hlowr', 'el ol') -- not included: d 
-      vec!("heo ", "llwo"),   // 2- ('heo ' 'llwo') -- not included: rld
-      vec!("hel", "lo "),     // 3- ('hel', 'lo ') -- not included: world
-      vec!("hell", "o wo"),   // 4- ('hell', 'o wo') -- not included:  rld
-      vec!("hello", " worl")  // 5- ('hello', ' worl') -- not included: d
+      vec!("h", "e"),         // 1
+      vec!("he", "ll"),       // 2
+      vec!("hel", "lo "),     // 3
+      vec!("hell", "o wo"),   // 4
+      vec!("hello", " worl")  // 5
     );
 
     for i in 1usize..6usize {
-      let (lhs, rhs) = s.split_on_keysize(i as i32);
-      lhs.print();
-      rhs.print();
+      let (lhs, rhs) = s.split_by_keysize(i);
       assert_eq!(ans_vec[i-1][0], lhs.to_string());
       assert_eq!(ans_vec[i-1][1], rhs.to_string());
     }
   }
 
+  // TEST SPLIT INTO BLOCKS - split_into_blocks
+  // TODO: add tests and test invalid cases
+  #[test]
+  fn check_split_into_blocks() {
+    let s = Storage::new_init("helloworld", "ascii");
+  
+    let test1_res = s.split_into_blocks(1);
+    assert_eq!("helloworld", test1_res[0].to_string());
+
+    let test2_res = s.split_into_blocks(2);
+    assert_eq!("hlool", test2_res[0].to_string());
+    assert_eq!("elwrd", test2_res[1].to_string());
+
+    let test3_res = s.split_into_blocks(5);
+    assert_eq!("hw", test3_res[0].to_string());
+    assert_eq!("eo", test3_res[1].to_string());
+    assert_eq!("lr", test3_res[2].to_string());
+    assert_eq!("ll", test3_res[3].to_string());
+    assert_eq!("od", test3_res[4].to_string());
+  }
+
 
   // TEST XOR - overloaded Bitwise XOR operator
-  // TODO: write tests for XOR (full + repeating)
+  // TODO: write tests for XOR (full + repeating) and invalid
   #[test]
   fn check_xor_full_noref() {
      
