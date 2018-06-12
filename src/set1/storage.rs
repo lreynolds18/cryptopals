@@ -150,6 +150,7 @@ impl Storage {
         48...57 => { u + 4 }, // 0 - 9
         43 => { 62 }, // +
         47 => { 63 }, // /
+        61 => { 255 }, // = (padding character)
         _ => { panic!("Error: this is not a valid base64 digit") }
       }
     } else {
@@ -181,6 +182,7 @@ impl Storage {
         52...61 => { (u - 4) as char }, // 0 - 9
         62 => { '+' }, // +
         63 => { '/' }, // /
+        255 => { '=' }, // = (padding character)
         _ => { panic!("Error: this is not a valid base64 digit") }
       }
     } else {
@@ -366,29 +368,58 @@ impl Storage {
         for (i, item) in self.data.iter().enumerate() {
           if i%3 == 0 {
             // temp starts at 00000000
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             temp = (item & 0xFC) >> 2;
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00******
             output.push(temp);
             // temp is now 00000000
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             temp = (item & 0x03) << 4;
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00**0000
           } else if i%3 == 1 {
             // temp starts as 00**0000
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             temp |= (item & 0xF0) >> 4;
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00******
             output.push(temp);
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00000000
             temp = (item & 0x0F) << 2;
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00****00
           } else if i%3 == 2 {
             // temp starts at 00****00
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             temp |= (item & 0xC0) >> 6;
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00******
             output.push(temp);
+            temp = item & 0x3F;
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00000000
-            output.push(item & 0x3F);
+            output.push(temp);
+            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00000000
           }
+        }
+        // Incorporate padding 
+        // if len%3 == 0 then we can split the string evenly into base64
+        // if len%3 == 1 then we have to encode the last bit of information with 2 unique base64 chars and 2 =
+        // if len%3 == 2 then we have to encode the last bit of information with 3 unique base64 chars and 1 =
+        if self.data.len() % 3 == 1 {
+          // encode with 2 unique base64 chars and 2 =
+          // temp has 00**0000
+          output.push(temp);
+          output.push(0xFF); // representing = as 0xFF
+          output.push(0xFF);
+        } else if self.data.len() % 3 == 2 {
+          // encode with 3 unique base64 chars and 1 =
+          // temp has 00****00
+          output.push(temp);
+          output.push(0xFF);
         }
       } else {
         panic!("Error: unsupported opeartion to convert {} base into {} base", 
@@ -729,7 +760,7 @@ mod tests {
   #[test]
   #[should_panic]
   fn check_invalid_u8_to_char_base64() {
-    Storage::u8_to_char(0xFF, "base64");
+    Storage::u8_to_char(0xC0, "base64");
   }
 
   #[test]
@@ -786,6 +817,19 @@ mod tests {
     let mut s = Storage::new_init("hello world!", "ascii");
     s.change_base("base64");
     assert_eq!("aGVsbG8gd29ybGQh", s.to_string());
+  }
+
+  #[test]
+  fn check_ascii_to_base64_padding() {
+    let mut s = Storage::new_init("Man", "ascii");
+    s.change_base("base64");
+    assert_eq!("TWFu", s.to_string());
+    s.set_data("Ma", "ascii");
+    s.change_base("base64");
+    assert_eq!("TWE=", s.to_string());
+    s.set_data("M", "ascii");
+    s.change_base("base64");
+    assert_eq!("TQ==", s.to_string());
   }
 
   #[test]
