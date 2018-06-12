@@ -368,40 +368,28 @@ impl Storage {
         for (i, item) in self.data.iter().enumerate() {
           if i%3 == 0 {
             // temp starts at 00000000
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             temp = (item & 0xFC) >> 2;
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00******
             output.push(temp);
             // temp is now 00000000
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             temp = (item & 0x03) << 4;
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00**0000
           } else if i%3 == 1 {
             // temp starts as 00**0000
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             temp |= (item & 0xF0) >> 4;
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00******
             output.push(temp);
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00000000
             temp = (item & 0x0F) << 2;
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00****00
           } else if i%3 == 2 {
             // temp starts at 00****00
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             temp |= (item & 0xC0) >> 6;
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00******
             output.push(temp);
             temp = item & 0x3F;
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00000000
             output.push(temp);
-            println!("i = {}, item = {:08b}, temp = {:08b}", i, item, temp);
             // temp is now 00000000
           }
         }
