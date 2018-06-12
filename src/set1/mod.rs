@@ -222,17 +222,13 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     .expect("Error: Something went wrong when reading the file");
 
   // get rid of newlines in contents
-  let mut file_contents = String::new();
-  // get rid of all the new lines
-  for line in contents.lines() {
-    file_contents.push_str(line);
-  }
+  let file_contents: String = contents.lines().collect();
+  println!("{}", file_contents.chars().count());
 
   let mut file_obj = storage::Storage::new_init(&file_contents, "base64");
-  println!("{}", file_obj.get_data().len());
   file_obj.change_base("ascii");
-  file_obj.print();
-  file_obj.change_base("base64");
+  // file_obj.print();
+  // file_obj.change_base("base64");
   // file_obj.change_base("hex");
 
   // Step 1-4 - Figure out keysize
@@ -266,41 +262,50 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   println!("{:?}", keysize);
   println!("{:?}", t);
   
-  // Step 6
-  let blocks = file_obj.split_into_blocks(keysize[0]);
-
-  // Steps 7-8 
-  // results that are going to be returned
   let mut key_string: String = String::new();
-  let mut key_char: char = ' ';
-  let mut max_freq: f32; // keep track of the winner char_freq
-  let mut tmp_freq: f32; // tmp variable to store char_freq of current string
+  let mut res = vec!();
 
-  for block in blocks.iter() {
-    let mut b = storage::Storage::new_init(&block.to_string().to_string(), block.get_data_type());
-    max_freq = 0_f32;
-    println!("{}", b.get_data().len());
-    b.change_base("ascii");
+  // for key in &keysize {
+  for key in 2usize..41usize {
+    // Step 6
+    // if file_obj.get_data_type() != "base64" {
+    //  file_obj.change_base("base64");
+    // }
+    let blocks = file_obj.split_into_blocks(key);
+    // let blocks = file_obj.split_into_blocks(*key);
+    key_string = String::new();
 
-    for ch in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
-      let mut char_obj = storage::Storage::new_init(&ch.to_string(), "ascii");
-      let mut ans = &b ^ &char_obj;
+    let mut key_char: char = ' ';
+    let mut max_freq: f32; // keep track of the winner char_freq
+    let mut tmp_freq: f32; // tmp variable to store char_freq of current string
 
-      tmp_freq = char_freq(ans.to_string().as_str());
-      if tmp_freq > max_freq {
-        key_char = ch;
-        max_freq = tmp_freq;
+    for block in blocks.iter() {
+      let inp: &str = &block.to_string().to_string();
+      let mut b = storage::Storage::new_init(&inp[..inp.chars().count() - (inp.chars().count() % 4)], block.get_data_type());
+
+      key_char = ' ';
+      max_freq = 0_f32;
+      for ch in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
+        let mut char_obj = storage::Storage::new_init(&ch.to_string(), "ascii");
+        let mut ans = &b ^ &char_obj;
+
+        tmp_freq = char_freq(ans.to_string().as_str());
+        if tmp_freq > max_freq {
+          key_char = ch;
+          max_freq = tmp_freq;
+        }
       }
+      key_string.push(key_char);
     }
-    key_string.push(key_char);
+    res.push(key_string.to_string());
+
+    let key_obj = storage::Storage::new_init(&key_string.as_str(), "ascii");
+    let ans = &file_obj ^ &key_obj;
+    ans.print(); 
   }
 
-  let key_obj = storage::Storage::new_init(&key_string.as_str(), "ascii");
-  println!("HERE");
-  file_obj.change_base("ascii");
-  let ans = &file_obj ^ &key_obj;
-  ans.print(); 
-
+  println!("{:?}", keysize);
+  println!("{:?}", res);
   (String::new(), key_string, keysize[2] as i32, 0) 
 }
 

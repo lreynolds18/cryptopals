@@ -331,7 +331,8 @@ impl Storage {
       } else if self.data_type == "base64" && new_init_base == "ascii" {
         // base64 -> ascii
         if self.data.len() % 4 != 0 {
-          panic!("Error: base64 doesn't fit nicely into an ASCII string");
+          panic!("Error: base64 doesn't fit nicely into an ASCII string. \
+            Length of base64 is {}", self.data.len());
         }
 
         for (i, item) in self.data.iter().enumerate() {
@@ -362,6 +363,17 @@ impl Storage {
             output.push(temp);
             // temp is now 00000000
           }
+        }
+
+        // padding
+        let data_l = self.data.len();
+        let output_l = output.len();
+
+        if data_l >= 2 && self.data[data_l-2] == 0xFF 
+          && self.data[data_l-1] == 0xFF {
+            output.truncate(output_l-2); 
+        } else if self.data[data_l-1] == 0xFF {
+          output.truncate(output_l-1); 
         }
       } else if self.data_type == "ascii" && new_init_base == "base64" {
         // ascii -> base64
@@ -444,6 +456,7 @@ impl Storage {
   }
 
 
+  // TODO: replace this with overload operator index
   /* split_into_blocks -- splits a storage into keysizes and then splits each keysize into blocks
    * Parameters: keysize (usize) - Number of characters that we want to split by
    * Return: out Vec<Storage> - Vector of Storage where each Storage contains the nth elements in each keysize
@@ -511,6 +524,19 @@ impl<'a> ops::BitXor<&'a Storage> for &'a Storage {
   }
 }
 
+/*
+impl<I> ops::Index<I> for Storage
+where
+    I: ::core::slice::SliceIndex<[T]>,
+{
+    type Output = I::Output;
+
+    #[inline]
+    fn index(&self, index: I) -> &Self::Output {
+        Index::index(&**self, index)
+    }
+}
+*/
 
 
 #[cfg(test)]
@@ -798,6 +824,30 @@ mod tests {
     let mut s = Storage::new_init("aGVsbG9vb29vIHdvcmxk", "base64");
     s.change_base("ascii");
     assert_eq!("hellooooo world", s.to_string());
+  }
+
+  #[test]
+  fn check_base64_to_ascii_padding_and_change_back() {
+    // test 1 - no padding
+    let mut s = Storage::new_init("TWFu", "base64");
+    s.change_base("ascii");
+    assert_eq!("Man", s.to_string());
+    s.change_base("base64");
+    assert_eq!("TWFu", s.to_string());
+  
+    // test 2 - 1 padding
+    s.set_data("TWE=", "base64");
+    s.change_base("ascii");
+    assert_eq!("Ma", s.to_string());
+    s.change_base("base64");
+    assert_eq!("TWE=", s.to_string());
+
+    // test 3 - 2 padding
+    s.set_data("TQ==", "base64");
+    s.change_base("ascii");
+    assert_eq!("M", s.to_string());
+    s.change_base("base64");
+    assert_eq!("TQ==", s.to_string());
   }
 
   #[test]
