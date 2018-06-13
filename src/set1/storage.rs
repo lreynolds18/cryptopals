@@ -4,7 +4,6 @@ use std::ops;
 // TODO: clean up change base
 // TODO: use boxes and error checking
 // TODO: figure out error message in constructor
-// TODO: as_str() should we implement??? cannot borrow String because the struct obj could go out of scope
 
 pub struct Storage {
   data: Vec<u8>,
@@ -208,23 +207,6 @@ impl Storage {
       .map(|i| Storage::u8_to_char(*i, self.data_type.as_str()))
       .collect()
   }
-
-
-  // TODO: implement as_str.  Complains about lifetime
-  /* as_str -- helper function to convert self.data Vec<u8> to &str
-   * Parameters: void 
-   * Return: out (&str) - Hex/Base64 data in string format 
-   */
-  /*
-  pub fn as_str(&self) -> &str {
-    let mut out = String::new();
-
-    for item in &self.data {
-      out.push(Storage::u8_to_char(*item, self.data_type.as_str()));
-    }
-    &out
-  }
-  */
 
 
   /* change_base -- convert old_base to new_init_base
