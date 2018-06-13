@@ -924,29 +924,109 @@ mod tests {
 
 
   // TEST XOR - overloaded Bitwise XOR operator
-  // TODO: write tests for XOR (full + repeating) and invalid
   #[test]
-  fn check_xor_full_noref() {
-     
-    assert_eq!("", "");
+  fn check_xor_full() {
+    let mut lhs = Storage::new_init("01234abcd", "hex");
+    let mut rhs = Storage::new_init("abcd01234", "hex");
+    let mut ans = &lhs ^ &rhs; 
+    assert_eq!("aaee4b9f9", ans.to_string()); 
+    assert_eq!("hex", ans.get_data_type());
+
+    lhs.set_data("ABCabc01+/", "base64");
+    rhs.set_data("+/abc01ABC", "base64");
+    ans = &lhs ^ &rhs;
+    assert_eq!("++YBHoB1/9", ans.to_string()); 
+    assert_eq!("base64", ans.get_data_type());
+
+    lhs.set_data("ABCc1+/", "ascii");
+    rhs.set_data("+/a0ABC", "ascii");
+    ans = &lhs ^ &rhs;
+    assert_eq!("jm\"Spil", ans.to_string()); 
+    assert_eq!("ascii", ans.get_data_type());
   }
 
   #[test]
   fn check_xor_one_char_repeating() {
+    let mut lhs = Storage::new_init("01234abcd", "hex");
+    let mut rhs = Storage::new_init("d", "hex");
+    let mut ans = &lhs ^ &rhs; 
+    assert_eq!("dcfe97610", ans.to_string()); 
+    assert_eq!("hex", ans.get_data_type());
+
+    lhs.set_data("ABCabc01+/", "base64");
+    rhs.set_data("+", "base64");
+    ans = &lhs ^ &rhs;
+    assert_eq!("+/8kliKLAB", ans.to_string()); 
+    assert_eq!("base64", ans.get_data_type());
+
+    lhs.set_data("{btvd", "ascii");
+    rhs.set_data("7", "ascii");
+    ans = &lhs ^ &rhs;
+    assert_eq!("LUCAS", ans.to_string()); 
+    assert_eq!("ascii", ans.get_data_type());
   }
 
   #[test]
   fn check_xor_multi_char_repeating() {
+    let mut lhs = Storage::new_init("01234abcd0", "hex");
+    let mut rhs = Storage::new_init("def", "hex");
+    let mut ans = &lhs ^ &rhs; 
+    assert_eq!("dfdea5622d", ans.to_string()); 
+    assert_eq!("hex", ans.get_data_type());
+
+    lhs.set_data("ABCDabc01+/", "base64");
+    rhs.set_data("z7e", "base64");
+    ans = &lhs ^ &rhs;
+    assert_eq!("z6cwhFvPrNE", ans.to_string()); 
+    assert_eq!("base64", ans.get_data_type());
+
+    lhs.set_data("longplaintext", "ascii");
+    rhs.set_data("key", "ascii");
+    ans = &lhs ^ &rhs;
+    // hello control characters
+    let ans_vec: Vec<u8> = vec!(0x07, 0x0a, 0x17, 0x0c, 
+      0x15, 0x15, 0x0a, 0x0c, 0x17, 0x1f, 0x00, 0x01, 0x1f);
+    assert_eq!(&ans_vec, ans.get_data()); 
+    assert_eq!("ascii", ans.get_data_type());
   }
 
   #[test]
   #[should_panic]
-  fn check_invalid_hex_operation() {
+  fn check_invalid_xor_empty_storages() {
     let lhs: Storage = Storage::new();
     let rhs: Storage = Storage::new();
     &lhs ^ &rhs;
   }
 
+  #[test]
+  #[should_panic]
+  fn check_invalid_xor_empty_and_full() {
+    let lhs = Storage::new_init("abc", "ascii");
+    let rhs = Storage::new();
+    &lhs ^ &rhs;
+  }
 
+  #[test]
+  #[should_panic]
+  fn check_invalid_xor_full_and_empty() {
+    let lhs = Storage::new();
+    let rhs = Storage::new_init("abc", "ascii");
+    &lhs ^ &rhs;
+  }
+  #[test]
+  #[should_panic]
+  fn check_invalid_xor_different_types() {
+    let lhs = Storage::new_init("abc", "ascii");
+    let rhs = Storage::new_init("abc", "hex");
+    &lhs ^ &rhs;
+  }
+
+  #[test]
+  #[should_panic]
+  fn check_invalid_xor_right_side_bigger() {
+    let lhs = Storage::new_init("abc", "hex");
+    let rhs = Storage::new_init("01234abcd", "hex");
+    &lhs ^ &rhs;
+  }
 
 }
