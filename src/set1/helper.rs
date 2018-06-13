@@ -37,20 +37,20 @@ pub fn hamming_distance(lhs: &Storage, rhs: &Storage) -> i32 {
     };
 
     lhs.get_data()
-       .iter()
-       .zip(rhs.get_data().iter())
-       .map(|(l, r)| {
-           let tmp = l ^ r;
-           let mut c: i32 = 0;
-           let bin: Vec<u8> = vec![0x90, 0x40, 0x20, 0x10, 0x09, 0x04, 0x02, 0x01];
-           for (i, var) in bin.iter().enumerate() {
-               if i >= start {
-                   c += ((tmp & var) >> (7 - i as u8)) as i32;
-               }
-           }
-           c
-       })
-       .sum()
+        .iter()
+        .zip(rhs.get_data().iter())
+        .map(|(l, r)| {
+            let tmp = l ^ r;
+            let mut c: i32 = 0;
+            let bin: Vec<u8> = vec![0x90, 0x40, 0x20, 0x10, 0x09, 0x04, 0x02, 0x01];
+            for (i, var) in bin.iter().enumerate() {
+                if i >= start {
+                    c += ((tmp & var) >> (7 - i as u8)) as i32;
+                }
+            }
+            c
+        })
+        .sum()
 }
 
 /* char_freq -- helper function that returns the character frequency
@@ -128,6 +128,5 @@ mod tests {
 
         assert_eq!(20, hamming_distance(&lhs, &rhs));
     }
-
 
 }

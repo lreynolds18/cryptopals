@@ -610,7 +610,6 @@ mod tests {
         assert_eq!(&ascii_vec, s.get_data());
     }
 
-
     // TEST char_to_u8
     #[test]
     fn check_char_to_u8_hex() {

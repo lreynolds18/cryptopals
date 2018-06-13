@@ -1,5 +1,5 @@
-pub mod storage;
 pub mod helper;
+pub mod storage;
 
 use self::storage::Storage;
 use std::fs::File;
@@ -37,7 +37,6 @@ pub fn fixed_xor(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) -
 
     ans.to_string()
 }
-
 
 /* single_byte_xor_cipher -- Set 1, Challenge 3
  * http://cryptopals.com/sets/1/challenges/3
