@@ -1,6 +1,7 @@
 pub mod storage;
+pub mod helper;
 
-use std::collections::HashMap;
+use self::storage::Storage;
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -12,7 +13,7 @@ use std::io::prelude::*;
  * Return: String - output of converting hex string to base64 string
  */
 pub fn hex_to_base64(hex_str: &str) -> String {
-    let mut s = storage::Storage::new_init(hex_str, "hex");
+    let mut s = Storage::new_init(hex_str, "hex");
 
     s.change_base("base64");
 
@@ -29,60 +30,14 @@ pub fn hex_to_base64(hex_str: &str) -> String {
  * Return: String - output of xor operation on lhs_str and rhs_str
  */
 pub fn fixed_xor(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) -> String {
-    let lhs = storage::Storage::new_init(lhs_str, lhs_type);
-    let rhs = storage::Storage::new_init(rhs_str, rhs_type);
+    let lhs = Storage::new_init(lhs_str, lhs_type);
+    let rhs = Storage::new_init(rhs_str, rhs_type);
 
     let ans = &lhs ^ &rhs;
 
     ans.to_string()
 }
 
-/* char_freq -- helper function that returns the character frequency
- * Parameters: str_inp (&str) - input string (ascii)
- * Return: f64 - character frequency score
- */
-pub fn char_freq(str_inp: &str) -> f32 {
-    // english char freq pulled from wikipedia
-    let freq: HashMap<char, f32> = [
-        ('a', 8.167),
-        ('b', 1.492),
-        ('c', 2.782),
-        ('d', 4.253),
-        ('e', 12.702),
-        ('f', 2.228),
-        ('g', 2.015),
-        ('h', 6.094),
-        ('i', 6.966),
-        ('j', 0.153),
-        ('k', 0.772),
-        ('l', 4.025),
-        ('m', 2.406),
-        ('n', 6.749),
-        ('o', 7.507),
-        ('p', 1.929),
-        ('q', 0.095),
-        ('r', 5.987),
-        ('s', 6.327),
-        ('t', 9.056),
-        ('u', 2.758),
-        ('v', 0.978),
-        ('w', 2.36),
-        ('x', 0.15),
-        ('y', 1.974),
-        ('z', 0.074),
-        (' ', 10.000),
-    ].iter()
-        .cloned()
-        .collect();
-
-    let mut count: f32 = 0.0_f32;
-    for c in str_inp.to_lowercase().chars() {
-        if let Some(f) = freq.get(&c) {
-            count += f;
-        }
-    }
-    count
-}
 
 /* single_byte_xor_cipher -- Set 1, Challenge 3
  * http://cryptopals.com/sets/1/challenges/3
@@ -92,7 +47,7 @@ pub fn char_freq(str_inp: &str) -> f32 {
  * Return: (String, Char) - (hidden message, key that was used)
  */
 pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
-    let s = storage::Storage::new_init(str_inp, str_type);
+    let s = Storage::new_init(str_inp, str_type);
 
     let mut result_string: String = s.to_string();
     let mut result_char: char = '0';
@@ -105,7 +60,7 @@ pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
         let mut ans = &s ^ &char_obj;
         ans.change_base("ascii");
 
-        tmp_freq = char_freq(ans.to_string().as_str());
+        tmp_freq = helper::char_freq(ans.to_string().as_str());
         if tmp_freq > max_freq {
             result_string = ans.to_string();
             result_char = i;
@@ -143,15 +98,15 @@ pub fn detect_single_character_xor(filename: &str) -> (String, char, i32) {
     // we are creating a new char_obj every line * every char (60*(26+26+10))= 3720
     // we are creating a ans every line * every char (60*(26+26+10)) = 3720
     for l in contents.lines() {
-        let mut obj = storage::Storage::new_init(&l, &"hex");
+        let mut obj = Storage::new_init(&l, &"hex");
 
         for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
-            let mut char_obj = storage::Storage::new_init(&i.to_string(), "ascii");
+            let mut char_obj = Storage::new_init(&i.to_string(), "ascii");
             char_obj.change_base("hex");
             let mut ans = &obj ^ &char_obj;
             ans.change_base("ascii");
 
-            tmp_freq = char_freq(&ans.to_string().as_str());
+            tmp_freq = helper::char_freq(&ans.to_string().as_str());
             if tmp_freq > max_freq {
                 result_string = ans.to_string();
                 result_char = i;
@@ -180,8 +135,8 @@ pub fn repeating_key_xor_encrypt(
     rhs_type: &str,
 ) -> String {
     // TODO: handle \n -- newlines
-    let lhs = storage::Storage::new_init(lhs_str, lhs_type);
-    let rhs = storage::Storage::new_init(rhs_str, rhs_type);
+    let lhs = Storage::new_init(lhs_str, lhs_type);
+    let rhs = Storage::new_init(rhs_str, rhs_type);
 
     let mut ans = &lhs ^ &rhs;
 
@@ -239,7 +194,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     for i in 2usize..41usize {
         let (lhs, rhs) = file_obj.split_by_keysize(i);
 
-        tmp = storage::Storage::hamming_distance(&lhs, &rhs) as f64 / i as f64;
+        tmp = helper::hamming_distance(&lhs, &rhs) as f64 / i as f64;
         t.push(tmp);
         if tmp < min_nor_dist[0] {
             min_nor_dist[2] = min_nor_dist[1];
@@ -293,7 +248,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
                 let mut char_obj = storage::Storage::new_init(&ch.to_string(), "ascii");
                 let mut ans = &b ^ &char_obj;
 
-                tmp_freq = char_freq(ans.to_string().as_str());
+                tmp_freq = helper::char_freq(ans.to_string().as_str());
                 if tmp_freq > max_freq {
                     key_char = ch;
                     max_freq = tmp_freq;
