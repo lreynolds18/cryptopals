@@ -438,7 +438,16 @@ impl Storage {
   }
 
 
-  // TODO: replace this with overload operator index
+  // TODO OR NOT TODO
+  /*
+  pub fn index(&self, left: usize, right: usize) -> Storage {
+    Storage {
+      data: self.data[left..right] 
+      data_type: &self.data_type
+    }
+  }
+  */
+
   /* split_into_blocks -- splits a storage into keysizes and then splits each keysize into blocks
    * Parameters: keysize (usize) - Number of characters that we want to split by
    * Return: out Vec<Storage> - Vector of Storage where each Storage contains the nth elements in each keysize
@@ -505,20 +514,6 @@ impl<'a> ops::BitXor<&'a Storage> for &'a Storage {
     }
   }
 }
-
-/*
-impl<I> ops::Index<I> for Storage
-where
-    I: ::core::slice::SliceIndex<[T]>,
-{
-    type Output = I::Output;
-
-    #[inline]
-    fn index(&self, index: I) -> &Self::Output {
-        Index::index(&**self, index)
-    }
-}
-*/
 
 
 #[cfg(test)]
@@ -1029,4 +1024,14 @@ mod tests {
     &lhs ^ &rhs;
   }
 
+  /*
+  #[test]
+  fn check_indexing() {
+    let s = Storage::new_init("abc", "ascii");
+    let ans = s.index(0);
+    // assert_eq!('a', ans);
+    assert_eq!("a", ans.to_string());
+    assert_eq!("ascii", ans.get_data_type());
+  }
+  */
 }

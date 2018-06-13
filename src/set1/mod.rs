@@ -265,14 +265,16 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
   let mut key_string: String = String::new();
   let mut res = vec!();
 
-  // for key in &keysize {
-  for key in 2usize..41usize {
+  // let v: Vec<usize> = vec!(4, 8, 12, 16, 20, 24, 28, 32, 36, 40);
+  let v: Vec<usize> = vec!(36);
+  // for key in 2usize..41usize {
+  for key in &v {
     // Step 6
     // if file_obj.get_data_type() != "base64" {
     //  file_obj.change_base("base64");
     // }
-    let blocks = file_obj.split_into_blocks(key);
-    // let blocks = file_obj.split_into_blocks(*key);
+    // let blocks = file_obj.split_into_blocks(key);
+    let blocks = file_obj.split_into_blocks(*key);
     key_string = String::new();
 
     let mut key_char: char = ' ';
