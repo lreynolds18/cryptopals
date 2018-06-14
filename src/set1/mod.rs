@@ -76,39 +76,40 @@ pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
  * Parameters: filename(&str) - File to detect single-character XOR
  * Return: (String, char, i32) - (Secret message, key that was used, line number)
  */
-pub fn detect_single_character_xor(filename: &str) -> (String, char, i32) {
+pub fn detect_single_character_xor(filename: &str) -> (String, String, i32) {
     let mut f = File::open(filename).expect("Error: File not found");
 
     let mut contents = String::new();
     f.read_to_string(&mut contents)
         .expect("Error: Something went wrong when reading the file");
 
+    let file_contents: Vec<Storage> = contents.lines()
+        .map(|l| Storage::new_init(l, "hex"))
+        .collect();
+
+    let char_objs: Vec<Storage> = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars()
+        .map(|c| Storage::new_init(&c.to_string(), "ascii"))
+        .collect();
+
     // results that are going to be returned
     let mut result_string: String = String::new();
-    let mut result_char: char = ' ';
+    let mut result_char: String = String::new(); 
     let mut result_num: i32 = 0;
 
     let mut max_freq: f32 = 0_f32; // keep track of the winner char_freq
     let mut tmp_freq: f32; // tmp variable to store char_freq of current string
     let mut count: i32 = 0; // keep track of line number
+    let mut ans: Storage;
 
-    // can we do better?
-    // we are creating a new obj every line (60 objs in memory)
-    // we are creating a new char_obj every line * every char (60*(26+26+10))= 3720
-    // we are creating a ans every line * every char (60*(26+26+10)) = 3720
-    for l in contents.lines() {
-        let mut obj = Storage::new_init(&l, &"hex");
-
-        for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
-            let mut char_obj = Storage::new_init(&i.to_string(), "ascii");
-            char_obj.change_base("hex");
-            let mut ans = &obj ^ &char_obj;
-            ans.change_base("ascii");
-
+    for mut fc in file_contents {
+        fc.change_base("ascii");
+        for co in &char_objs {
+            ans = &fc ^ co;  
             tmp_freq = helper::char_freq(&ans.to_string().as_str());
+
             if tmp_freq > max_freq {
                 result_string = ans.to_string();
-                result_char = i;
+                result_char = co.to_string(); 
                 result_num = count;
                 max_freq = tmp_freq;
             }
@@ -167,6 +168,7 @@ pub fn repeating_key_xor_encrypt(
  * Return: (String, char, i32) - (Secret message, key that was used, key size, line number)
  */
 pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
+    /*
     // open file and put in contents
     let mut f = File::open(filename).expect("Error: File not found");
 
@@ -174,24 +176,19 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     f.read_to_string(&mut contents)
         .expect("Error: Something went wrong when reading the file");
 
-    // get rid of newlines in contents
-    let file_contents: String = contents.lines().collect();
-    println!("{}", file_contents.chars().count());
-
-    let mut file_obj = storage::Storage::new_init(&file_contents, "base64");
-    file_obj.change_base("ascii");
-    // file_obj.print();
-    // file_obj.change_base("base64");
-    // file_obj.change_base("hex");
-
-    // Step 1-4 - Figure out keysize
+    // create vec of storages on each line
+    let file_contents: Vec<mut Storage> = contents.lines()
+        .map(|l| Storage::new_init(l, "base64"))
+        .collect();
+    
+    // Step 1-4 - Figure out keysize (theoretically we should use a minheap)
     let mut keysize: Vec<usize> = vec![0, 0, 0];
     let mut min_nor_dist: Vec<f64> = vec![1.0f64 / 0.0f64, 1.0f64 / 0.0f64, 1.0f64 / 0.0f64]; // set as MAX
     let mut tmp: f64;
     let mut t = vec![];
 
     for i in 2usize..41usize {
-        let (lhs, rhs) = file_obj.split_by_keysize(i);
+        let (lhs, rhs) = file_contents[0].split_by_keysize(i);
 
         tmp = helper::hamming_distance(&lhs, &rhs) as f64 / i as f64;
         t.push(tmp);
@@ -215,18 +212,15 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     println!("{:?}", keysize);
     println!("{:?}", t);
 
+
+    // Step 5-8 - Find line that looks the most like english
     let mut key_string: String = String::new();
     let mut res = vec![];
 
     // let v: Vec<usize> = vec!(4, 8, 12, 16, 20, 24, 28, 32, 36, 40);
-    let v: Vec<usize> = vec![36];
+    // let v: Vec<usize> = vec![36];
     // for key in 2usize..41usize {
-    for key in &v {
-        // Step 6
-        // if file_obj.get_data_type() != "base64" {
-        //  file_obj.change_base("base64");
-        // }
-        // let blocks = file_obj.split_into_blocks(key);
+    for key in &keysize {
         let blocks = file_obj.split_into_blocks(*key);
         key_string = String::new();
 
@@ -264,5 +258,9 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
 
     println!("{:?}", keysize);
     println!("{:?}", res);
+    */
+    
+    let key_string = String::new();
+    let mut keysize: Vec<usize> = vec![0, 0, 0];
     (String::new(), key_string, keysize[2] as i32, 0)
 }
