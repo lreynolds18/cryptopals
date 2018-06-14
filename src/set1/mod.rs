@@ -170,19 +170,22 @@ pub fn repeating_key_xor_encrypt(
  * Return: (String, char, i32) - (Secret message, key that was used, key size, line number)
  */
 pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
-    /*
-    // open file and put in contents
     let mut f = File::open(filename).expect("Error: File not found");
 
     let mut contents = String::new();
     f.read_to_string(&mut contents)
         .expect("Error: Something went wrong when reading the file");
 
-    // create vec of storages on each line
-    let file_contents: Vec<mut Storage> = contents.lines()
+    let file_contents: Vec<Storage> = contents
+        .lines()
         .map(|l| Storage::new_init(l, "base64"))
         .collect();
-    
+
+    let char_objs: Vec<Storage> = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        .chars()
+        .map(|c| Storage::new_init(&c.to_string(), "ascii"))
+        .collect();
+
     // Step 1-4 - Figure out keysize (theoretically we should use a minheap)
     let mut keysize: Vec<usize> = vec![0, 0, 0];
     let mut min_nor_dist: Vec<f64> = vec![1.0f64 / 0.0f64, 1.0f64 / 0.0f64, 1.0f64 / 0.0f64]; // set as MAX
@@ -214,22 +217,30 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     println!("{:?}", keysize);
     println!("{:?}", t);
 
+    // keysize = vec!(4, 8, 12, 16, 20, 24, 28, 32, 36, 40);
+    // keysize = vec!(36);
+    // keysize = vec!(2usize..41usize);
 
-    // Step 5-8 - Find line that looks the most like english
     let mut key_string: String = String::new();
-    let mut res = vec![];
+    // let mut res = vec![];
+    let mut max_freq = 0_f32; // keep track of the winning string
 
-    // let v: Vec<usize> = vec!(4, 8, 12, 16, 20, 24, 28, 32, 36, 40);
-    // let v: Vec<usize> = vec![36];
-    // for key in 2usize..41usize {
+    let mut key_char: char = ' ';
+    let mut max_char_freq: f32; // keep track of the winner char_freq
+    let mut tmp_freq: f32; // tmp variable to store char_freq
+
     for key in &keysize {
-        let blocks = file_obj.split_into_blocks(*key);
-        key_string = String::new();
+        for file_obj in &file_contents {
+            // file_obj.change_base("ascii");
+            let blocks = helper::split_into_blocks(&file_obj, *key);
+            key_string = String::new();
 
-        let mut key_char: char = ' ';
-        let mut max_freq: f32; // keep track of the winner char_freq
-        let mut tmp_freq: f32; // tmp variable to store char_freq of current string
+            for block in &blocks {
+            }
+        }
+    }       
 
+    /*
         for block in blocks.iter() {
             let inp: &str = &block.to_string().to_string();
             let mut b = storage::Storage::new_init(
@@ -261,8 +272,5 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     println!("{:?}", keysize);
     println!("{:?}", res);
     */
-
-    let key_string = String::new();
-    let mut keysize: Vec<usize> = vec![0, 0, 0];
     (String::new(), key_string, keysize[2] as i32, 0)
 }

@@ -104,11 +104,37 @@ pub fn char_freq(str_inp: &str) -> f32 {
     count
 }
 
+/* split_into_blocks -- splits a storage into keysizes and then splits each keysize into blocks
+ * Parameters: keysize (usize) - Number of characters that we want to split by
+ * Return: out Vec<Storage> - Vector of Storage where each Storage contains the nth elements in each keysize
+ */
+pub fn split_into_blocks(s: &Storage, keysize: usize) -> Vec<Storage> {
+    // create an empty Vec<Vec<u8>> with the length of keysize
+    let mut holder: Vec<String> = (0..keysize).map(|_| String::new()).collect();
+
+    // add the nth item to the respective vec in holder
+    // if data contains "helloworld" then w/ keysize 5
+    // the result should be
+    // "hw", "eo", "lr", "ll", "od"
+    // because we split "helloworld" into "hello" and "world"
+    // then we append the first characters to the first vec...
+    for (i, d) in s.to_string().chars().enumerate() {
+        holder[i % keysize].push(d);
+    }
+
+    let dt: &str = &s.get_data_type();
+    holder
+        .iter()
+        .map(|v| Storage::new_init(v, dt))
+        .collect()
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // TEST HAMMING DISTANCE hamming_distance
+    // TEST hamming_distance
     #[test]
     fn check_hamming_distance_ascii() {
         let lhs = Storage::new_init("this is a test", "ascii");
@@ -133,6 +159,8 @@ mod tests {
         assert_eq!(20, hamming_distance(&lhs, &rhs));
     }
 
+
+    // TEST char_freq
     #[test]
     fn check_char_freq_compare_two_strings() {
         assert_eq!(char_freq("hello world") > char_freq("~!#$!@"), true);
@@ -152,4 +180,26 @@ mod tests {
         // checking length of valid string vs invalid string
         assert_ne!(char_freq("key") > char_freq("    !@# ,,. )(@! "), true);
     }
+
+    // TEST split_into_blocks
+    // TODO: add tests and test invalid cases
+    #[test]
+    fn check_split_into_blocks() {
+        let s = Storage::new_init("helloworld", "ascii");
+
+        let test1_res = split_into_blocks(&s, 1);
+        assert_eq!("helloworld", test1_res[0].to_string());
+
+        let test2_res = split_into_blocks(&s, 2);
+        assert_eq!("hlool", test2_res[0].to_string());
+        assert_eq!("elwrd", test2_res[1].to_string());
+
+        let test3_res = split_into_blocks(&s, 5);
+        assert_eq!("hw", test3_res[0].to_string());
+        assert_eq!("eo", test3_res[1].to_string());
+        assert_eq!("lr", test3_res[2].to_string());
+        assert_eq!("ll", test3_res[3].to_string());
+        assert_eq!("od", test3_res[4].to_string());
+    }
+
 }

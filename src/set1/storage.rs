@@ -399,33 +399,6 @@ impl Storage {
     }
   }
   */
-
-    /* split_into_blocks -- splits a storage into keysizes and then splits each keysize into blocks
-     * Parameters: keysize (usize) - Number of characters that we want to split by
-     * Return: out Vec<Storage> - Vector of Storage where each Storage contains the nth elements in each keysize
-     */
-    pub fn split_into_blocks(&self, keysize: usize) -> Vec<Storage> {
-        // create an empty Vec<Vec<u8>> with the length of keysize
-        let mut holder: Vec<Vec<u8>> = (0..keysize).map(|_| vec![]).collect();
-
-        // add the nth item to the respective vec in holder
-        // if data contains "helloworld" then w/ keysize 5
-        // the result should be
-        // "hw", "eo", "lr", "ll", "od"
-        // because we split "helloworld" into "hello" and "world"
-        // then we append the first characters to the first vec...
-        for (i, d) in self.data.iter().cloned().enumerate() {
-            holder[i % keysize].push(d);
-        }
-
-        holder
-            .iter()
-            .map(|v| Storage {
-                data: v.to_vec(),
-                data_type: self.get_data_type().to_string(),
-            })
-            .collect()
-    }
 }
 
 // XOR implementation for Storage ^ Storage = Storage
@@ -842,26 +815,6 @@ mod tests {
         s.split_by_keysize(6);
     }
 
-    // TEST SPLIT INTO BLOCKS - split_into_blocks
-    // TODO: add tests and test invalid cases
-    #[test]
-    fn check_split_into_blocks() {
-        let s = Storage::new_init("helloworld", "ascii");
-
-        let test1_res = s.split_into_blocks(1);
-        assert_eq!("helloworld", test1_res[0].to_string());
-
-        let test2_res = s.split_into_blocks(2);
-        assert_eq!("hlool", test2_res[0].to_string());
-        assert_eq!("elwrd", test2_res[1].to_string());
-
-        let test3_res = s.split_into_blocks(5);
-        assert_eq!("hw", test3_res[0].to_string());
-        assert_eq!("eo", test3_res[1].to_string());
-        assert_eq!("lr", test3_res[2].to_string());
-        assert_eq!("ll", test3_res[3].to_string());
-        assert_eq!("od", test3_res[4].to_string());
-    }
 
     // TEST XOR - overloaded Bitwise XOR operator
     #[test]
