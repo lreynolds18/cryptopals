@@ -83,17 +83,19 @@ pub fn detect_single_character_xor(filename: &str) -> (String, String, i32) {
     f.read_to_string(&mut contents)
         .expect("Error: Something went wrong when reading the file");
 
-    let file_contents: Vec<Storage> = contents.lines()
+    let file_contents: Vec<Storage> = contents
+        .lines()
         .map(|l| Storage::new_init(l, "hex"))
         .collect();
 
-    let char_objs: Vec<Storage> = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars()
+    let char_objs: Vec<Storage> = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        .chars()
         .map(|c| Storage::new_init(&c.to_string(), "ascii"))
         .collect();
 
     // results that are going to be returned
     let mut result_string: String = String::new();
-    let mut result_char: String = String::new(); 
+    let mut result_char: String = String::new();
     let mut result_num: i32 = 0;
 
     let mut max_freq: f32 = 0_f32; // keep track of the winner char_freq
@@ -104,12 +106,12 @@ pub fn detect_single_character_xor(filename: &str) -> (String, String, i32) {
     for mut fc in file_contents {
         fc.change_base("ascii");
         for co in &char_objs {
-            ans = &fc ^ co;  
+            ans = &fc ^ co;
             tmp_freq = helper::char_freq(&ans.to_string().as_str());
 
             if tmp_freq > max_freq {
                 result_string = ans.to_string();
-                result_char = co.to_string(); 
+                result_char = co.to_string();
                 result_num = count;
                 max_freq = tmp_freq;
             }
@@ -259,7 +261,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     println!("{:?}", keysize);
     println!("{:?}", res);
     */
-    
+
     let key_string = String::new();
     let mut keysize: Vec<usize> = vec![0, 0, 0];
     (String::new(), key_string, keysize[2] as i32, 0)
