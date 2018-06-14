@@ -54,6 +54,10 @@ pub fn hamming_distance(lhs: &Storage, rhs: &Storage) -> i32 {
 }
 
 /* char_freq -- helper function that returns the character frequency
+ * notes: this is not very robust.  Can easily break it by passing a string full ' '
+ * Kind of like a cheap check to verify that the strings are somewhat english
+ * additionally, size of the string matters (could normalize)
+ * may need to rethink
  * Parameters: str_inp (&str) - input string (ascii)
  * Return: f64 - character frequency score
  */
@@ -129,4 +133,20 @@ mod tests {
         assert_eq!(20, hamming_distance(&lhs, &rhs));
     }
 
+    #[test]
+    fn check_char_freq_compare_two_strings() {
+        assert_eq!(char_freq("hello world") > char_freq("~!#$!@"), true);
+        assert_eq!(char_freq("this is a secret message") > char_freq("~!#$!@"), true);
+        assert_eq!(char_freq("key") > char_freq("!@#()!#$,./"), true);
+        assert_eq!(char_freq("blah blahBLAH") > char_freq("~!#$!@"), true);
+    }
+
+    #[test]
+    fn check_char_freq_tests_that_should_fail() {
+        // checking valid string vs white space (invalid)
+        assert_ne!(char_freq("hello world") > char_freq("           "), true);
+
+        // checking length of valid string vs invalid string
+        assert_ne!(char_freq("key") > char_freq("    !@# ,,. )(@! "), true);
+    }
 }
