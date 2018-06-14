@@ -235,10 +235,9 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
             let blocks = helper::split_into_blocks(&file_obj, *key);
             key_string = String::new();
 
-            for block in &blocks {
-            }
+            for block in &blocks {}
         }
-    }       
+    }
 
     /*
         for block in blocks.iter() {

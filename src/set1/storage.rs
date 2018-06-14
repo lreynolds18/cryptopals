@@ -815,7 +815,6 @@ mod tests {
         s.split_by_keysize(6);
     }
 
-
     // TEST XOR - overloaded Bitwise XOR operator
     #[test]
     fn check_xor_full() {

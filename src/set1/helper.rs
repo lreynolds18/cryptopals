@@ -123,12 +123,8 @@ pub fn split_into_blocks(s: &Storage, keysize: usize) -> Vec<Storage> {
     }
 
     let dt: &str = &s.get_data_type();
-    holder
-        .iter()
-        .map(|v| Storage::new_init(v, dt))
-        .collect()
+    holder.iter().map(|v| Storage::new_init(v, dt)).collect()
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -158,7 +154,6 @@ mod tests {
 
         assert_eq!(20, hamming_distance(&lhs, &rhs));
     }
-
 
     // TEST char_freq
     #[test]
