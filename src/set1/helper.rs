@@ -88,8 +88,8 @@ pub fn char_freq(str_inp: &str) -> f32 {
         ('z', 0.074),
         (' ', 10.000),
     ].iter()
-     .cloned()
-     .collect();
+        .cloned()
+        .collect();
 
     let mut count: f32 = 0.0_f32;
     for c in str_inp.to_lowercase().chars() {
