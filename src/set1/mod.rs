@@ -167,19 +167,17 @@ pub fn repeating_key_xor_encrypt(
  *   Step 8: For each block, the single-byte XOR key that produces the best looking histogram is
  *           the repeating-key XOR key byte for that block. Put them together and you have the key.
  * Parameters: filename(&str) - File to detect repeating key xor
- * Return: (String, char, i32) - (Secret message, key that was used, key size, line number)
+ * Return: (String, String, usize) - (Secret message, key that was used, key size)
  */
-pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
+pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
     let mut f = File::open(filename).expect("Error: File not found");
 
     let mut contents = String::new();
     f.read_to_string(&mut contents)
         .expect("Error: Something went wrong when reading the file");
 
-    let file_contents: Vec<Storage> = contents
-        .lines()
-        .map(|l| Storage::new_init(l, "base64"))
-        .collect();
+    let mut file_contents = Storage::new_init(&contents.replace("\n", ""), "base64");
+    file_contents.change_base("ascii");
 
     let char_objs: Vec<Storage> = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
         .chars()
@@ -191,9 +189,9 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
     let mut min_nor_dist: Vec<f64> = vec![1.0f64 / 0.0f64, 1.0f64 / 0.0f64, 1.0f64 / 0.0f64]; // set as MAX
     let mut tmp: f64;
     let mut t = vec![];
-
+    
     for i in 2usize..41usize {
-        let (lhs, rhs) = file_contents[0].split_by_keysize(i);
+        let (lhs, rhs) = file_contents.split_by_keysize(i);
 
         tmp = helper::hamming_distance(&lhs, &rhs) as f64 / i as f64;
         t.push(tmp);
@@ -214,62 +212,44 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, i32, i32) {
             keysize[2] = i;
         }
     }
-    println!("{:?}", keysize);
-    println!("{:?}", t);
+    // println!("{:?}", keysize);
+    // println!("{:?}", t);
 
     // keysize = vec!(4, 8, 12, 16, 20, 24, 28, 32, 36, 40);
     // keysize = vec!(36);
     // keysize = vec!(2usize..41usize);
 
-    let mut key_string: String = String::new();
-    // let mut res = vec![];
-    let mut max_freq = 0_f32; // keep track of the winning string
-
-    let mut key_char: char = ' ';
-    let mut max_char_freq: f32; // keep track of the winner char_freq
-    let mut tmp_freq: f32; // tmp variable to store char_freq
+    let mut key_string = String::new();
+    let mut result_char = String::new(); 
+    let mut max_freq: f32;
+    let mut tmp_freq: f32;
+    let mut ans: Storage = Storage::new();
+    let mut key_obj: Storage;
+    let mut blocks: Vec<Storage>;
 
     for key in &keysize {
-        for file_obj in &file_contents {
-            // file_obj.change_base("ascii");
-            let blocks = helper::split_into_blocks(&file_obj, *key);
-            key_string = String::new();
+        blocks = helper::split_into_blocks(&file_contents, *key);
 
-            for block in &blocks {}
-        }
-    }
+        key_string = String::new();
 
-    /*
-        for block in blocks.iter() {
-            let inp: &str = &block.to_string().to_string();
-            let mut b = storage::Storage::new_init(
-                &inp[..inp.chars().count() - (inp.chars().count() % 4)],
-                block.get_data_type(),
-            );
-
-            key_char = ' ';
+        for block in &blocks {
             max_freq = 0_f32;
-            for ch in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
-                let mut char_obj = storage::Storage::new_init(&ch.to_string(), "ascii");
-                let mut ans = &b ^ &char_obj;
 
-                tmp_freq = helper::char_freq(ans.to_string().as_str());
+            for co in &char_objs {
+                ans = block ^ co;
+                tmp_freq = helper::char_freq(&ans.to_string().as_str());
+
                 if tmp_freq > max_freq {
-                    key_char = ch;
+                    result_char = co.to_string();
                     max_freq = tmp_freq;
                 }
             }
-            key_string.push(key_char);
+            key_string.push_str(&result_char);
         }
-        res.push(key_string.to_string());
-
-        let key_obj = storage::Storage::new_init(&key_string.as_str(), "ascii");
-        let ans = &file_obj ^ &key_obj;
+        key_obj = Storage::new_init(&key_string, "ascii");
+        ans = &file_contents ^ &key_obj;
         ans.print();
     }
-
-    println!("{:?}", keysize);
-    println!("{:?}", res);
-    */
-    (String::new(), key_string, keysize[2] as i32, 0)
+    
+    (ans.to_string(), key_string, keysize[0])
 }
