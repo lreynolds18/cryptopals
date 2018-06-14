@@ -189,7 +189,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
     let mut min_nor_dist: Vec<f64> = vec![1.0f64 / 0.0f64, 1.0f64 / 0.0f64, 1.0f64 / 0.0f64]; // set as MAX
     let mut tmp: f64;
     let mut t = vec![];
-    
+
     for i in 2usize..41usize {
         let (lhs, rhs) = file_contents.split_by_keysize(i);
 
@@ -220,7 +220,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
     // keysize = vec!(2usize..41usize);
 
     let mut key_string = String::new();
-    let mut result_char = String::new(); 
+    let mut result_char = String::new();
     let mut max_freq: f32;
     let mut tmp_freq: f32;
     let mut ans: Storage = Storage::new();
@@ -250,6 +250,6 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
         ans = &file_contents ^ &key_obj;
         ans.print();
     }
-    
+
     (ans.to_string(), key_string, keysize[0])
 }
