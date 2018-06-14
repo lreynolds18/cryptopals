@@ -2,7 +2,7 @@ pub mod helper;
 pub mod storage;
 
 use self::storage::Storage;
-use std::fs::File;
+use std::fs;
 use std::io::prelude::*;
 
 /* hex_to_base64 -- Set 1, Challenge 1
@@ -77,11 +77,7 @@ pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
  * Return: (String, char, i32) - (Secret message, key that was used, line number)
  */
 pub fn detect_single_character_xor(filename: &str) -> (String, String, i32) {
-    let mut f = File::open(filename).expect("Error: File not found");
-
-    let mut contents = String::new();
-    f.read_to_string(&mut contents)
-        .expect("Error: Something went wrong when reading the file");
+    let contents = fs::read_to_string(filename).expect("Error: Unable to read file");
 
     let file_contents: Vec<Storage> = contents
         .lines()
@@ -170,11 +166,7 @@ pub fn repeating_key_xor_encrypt(
  * Return: (String, String, usize) - (Secret message, key that was used, key size)
  */
 pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
-    let mut f = File::open(filename).expect("Error: File not found");
-
-    let mut contents = String::new();
-    f.read_to_string(&mut contents)
-        .expect("Error: Something went wrong when reading the file");
+    let contents = fs::read_to_string(filename).expect("Error: Unable to read file");
 
     let mut file_contents = Storage::new_init(&contents.replace("\n", ""), "base64");
     file_contents.change_base("ascii");
@@ -212,12 +204,12 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
             keysize[2] = i;
         }
     }
-    // println!("{:?}", keysize);
+    println!("{:?}", keysize);
     // println!("{:?}", t);
 
     // keysize = vec!(4, 8, 12, 16, 20, 24, 28, 32, 36, 40);
-    // keysize = vec!(36);
-    // keysize = vec!(2usize..41usize);
+    keysize = vec![29];
+    // keysize = (2usize..41usize).collect();
 
     let mut key_string = String::new();
     let mut result_char = String::new();
@@ -246,9 +238,11 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
             }
             key_string.push_str(&result_char);
         }
+
         key_obj = Storage::new_init(&key_string, "ascii");
         ans = &file_contents ^ &key_obj;
-        ans.print();
+        // fs::write("./tmp/".to_owned() + &key.to_string() + &".txt".to_owned(), ans.to_string())
+        //     .expect("Unable to write file");
     }
 
     (ans.to_string(), key_string, keysize[0])

@@ -102,5 +102,5 @@ fn main() {
     println!("Res key: {}", ans_key6);
     println!("Ans key: ?");
     println!("Res key: {}", ans_keysize6);
-    println!("Ans line: ?");
+    println!("Ans line: 29");
 }
