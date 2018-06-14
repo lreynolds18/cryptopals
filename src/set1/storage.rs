@@ -2,8 +2,6 @@ use std::ops;
 
 // TODO: ownership? who owns what and why
 // TODO: clean up change base
-// TODO: use boxes and error checking
-// TODO: figure out error message in constructor
 
 pub struct Storage {
     data: Vec<u8>,
