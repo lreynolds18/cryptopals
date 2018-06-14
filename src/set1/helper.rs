@@ -136,7 +136,10 @@ mod tests {
     #[test]
     fn check_char_freq_compare_two_strings() {
         assert_eq!(char_freq("hello world") > char_freq("~!#$!@"), true);
-        assert_eq!(char_freq("this is a secret message") > char_freq("~!#$!@"), true);
+        assert_eq!(
+            char_freq("this is a secret message") > char_freq("~!#$!@"),
+            true
+        );
         assert_eq!(char_freq("key") > char_freq("!@#()!#$,./"), true);
         assert_eq!(char_freq("blah blahBLAH") > char_freq("~!#$!@"), true);
     }
