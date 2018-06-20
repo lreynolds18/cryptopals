@@ -96,11 +96,9 @@ fn main() {
     let (ans_message6, ans_key6, ans_keysize6) =
         set1::break_repeating_key_xor("./set1challenge6.txt");
 
-    println!("Ans message: ?");
     println!("Res message: {}", ans_message6);
-    println!("Ans key: ?");
+    println!("Ans key: Terminator X: Bring the noise");
     println!("Res key: {}", ans_key6);
-    println!("Ans key: ?");
-    println!("Res key: {}", ans_keysize6);
-    println!("Ans line: 29");
+    println!("Ans keysize: 29");
+    println!("Res keysize: {}", ans_keysize6);
 }

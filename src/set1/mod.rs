@@ -2,6 +2,7 @@ pub mod helper;
 pub mod storage;
 
 use self::storage::Storage;
+use std::f64;
 use std::fs;
 
 /* hex_to_base64 -- Set 1, Challenge 1
@@ -170,91 +171,60 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
     let mut file_contents = Storage::new_init(&contents.replace("\n", ""), "base64");
     file_contents.change_base("ascii");
 
-    let char_objs: Vec<Storage> = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-        .chars()
-        .map(|c| Storage::new_init(&c.to_string(), "ascii"))
-        .collect();
+    let char_objs: Vec<Storage> =
+        " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz:"
+            .chars()
+            .map(|c| Storage::new_init(&c.to_string(), "ascii"))
+            .collect();
 
     // Step 1-4 - Figure out keysize (theoretically we should use a minheap)
-    let mut keysize: Vec<usize> = vec![0, 0, 0];
-    let mut min_nor_dist: Vec<f64> = vec![1.0f64 / 0.0f64, 1.0f64 / 0.0f64, 1.0f64 / 0.0f64]; // set as MAX
-                                                                                              // let mut min_nor_dist: Vec<f64> = vec![0f64, 0f64, 0f64];
+    let mut keysize: usize = 0;
+    let mut min_nor_dist: f64 = f64::INFINITY; // set as MAX
     let mut tmp: f64;
-    let mut t = vec![];
 
-    for i in 6usize..41usize {
-        let lhs1 = file_contents.index(0, i);
-        let lhs2 = file_contents.index(2 * i, 3 * i);
-        let lhs3 = file_contents.index(4 * i, 5 * i);
+    for i in 4usize..41usize {
+        let s1 = file_contents.index(0, i);
+        let s2 = file_contents.index(i, 2 * i);
+        let s3 = file_contents.index(2 * i, 3 * i);
+        let s4 = file_contents.index(3 * i, 4 * i);
 
-        let rhs1 = file_contents.index(i, 2 * i);
-        let rhs2 = file_contents.index(3 * i, 4 * i);
-        let rhs3 = file_contents.index(5 * i, 6 * i);
-
-        let hd1 = helper::hamming_distance(&lhs1, &rhs1);
-        let hd2 = helper::hamming_distance(&lhs2, &rhs2);
-        let hd3 = helper::hamming_distance(&lhs3, &rhs3);
+        let hd1 = helper::hamming_distance(&s1, &s2);
+        let hd2 = helper::hamming_distance(&s2, &s3);
+        let hd3 = helper::hamming_distance(&s3, &s4);
 
         tmp = (hd1 + hd2 + hd3) as f64 / (3 * i) as f64;
 
-        t.push(tmp);
-        if tmp < min_nor_dist[0] {
-            min_nor_dist[2] = min_nor_dist[1];
-            min_nor_dist[1] = min_nor_dist[0];
-            min_nor_dist[0] = tmp;
-            keysize[2] = keysize[1];
-            keysize[1] = keysize[0];
-            keysize[0] = i;
-        } else if tmp < min_nor_dist[1] {
-            min_nor_dist[2] = min_nor_dist[1];
-            min_nor_dist[1] = tmp;
-            keysize[2] = keysize[1];
-            keysize[1] = i;
-        } else if tmp < min_nor_dist[2] {
-            min_nor_dist[2] = tmp;
-            keysize[2] = i;
+        if tmp < min_nor_dist {
+            min_nor_dist = tmp;
+            keysize = i;
         }
     }
-    println!("{:?}", keysize);
-    println!("{:?}", t);
-    println!("{:?}", t[30]);
-
-    // keysize = vec!(4, 8, 12, 16, 20, 24, 28, 32, 36, 40);
-    keysize = vec![29];
-    // keysize = (2usize..41usize).collect();
 
     let mut key_string = String::new();
     let mut result_char = String::new();
     let mut max_freq: f32;
     let mut tmp_freq: f32;
-    let mut ans: Storage = Storage::new();
-    let mut key_obj: Storage;
-    let mut blocks: Vec<Storage>;
+    let mut ans = Storage::new();
 
-    for key in &keysize {
-        blocks = helper::split_into_blocks(&file_contents, *key);
+    let blocks = helper::split_into_blocks(&file_contents, keysize);
 
-        key_string = String::new();
+    for block in &blocks {
+        max_freq = 0_f32;
 
-        for block in &blocks {
-            max_freq = 0_f32;
+        for co in &char_objs {
+            ans = block ^ co;
+            tmp_freq = helper::char_freq(&ans.to_string().as_str());
 
-            for co in &char_objs {
-                ans = block ^ co;
-                tmp_freq = helper::char_freq(&ans.to_string().as_str());
-
-                if tmp_freq > max_freq {
-                    result_char = co.to_string();
-                    max_freq = tmp_freq;
-                }
+            if tmp_freq > max_freq {
+                result_char = co.to_string();
+                max_freq = tmp_freq;
             }
-            key_string.push_str(&result_char);
         }
-
-        key_obj = Storage::new_init(&key_string, "ascii");
-        ans = &file_contents ^ &key_obj;
+        key_string.push_str(&result_char);
     }
 
-    // (ans.to_string(), key_string, keysize[0])
-    ("".to_string(), key_string, keysize[0])
+    let key_obj = Storage::new_init(&key_string, "ascii");
+    ans = &file_contents ^ &key_obj;
+
+    (ans.to_string(), key_string, keysize)
 }
