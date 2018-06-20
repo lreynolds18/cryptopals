@@ -20,7 +20,6 @@ impl Storage {
         }
     }
 
-
     /* new_init -- constructor for storage
      * converts string to vec<u8>
      * assuming str_inp is in it's respected format of data_type (hex / base64)
@@ -34,7 +33,6 @@ impl Storage {
             data_type: String::from(data_type),
         }
     }
-
 
     /* build_data -- helper function to build self.data
      * Parameters: str_inp (&str) - input string,
@@ -52,7 +50,6 @@ impl Storage {
             .collect()
     }
 
-
     /* set_data -- helper function to set self.data and self.data_type
      * Parameters: str_inp (&str) - input string,
      *             data_type (&str) - data type of input string (hex or base64)
@@ -63,7 +60,6 @@ impl Storage {
         self.data_type = String::from(data_type);
     }
 
-
     /* get_data -- helper function to get self.data
      * Parameters: void
      * Return: self.data (Vec<u8>) - data in vector format
@@ -72,7 +68,6 @@ impl Storage {
         &self.data
     }
 
-
     /* get_data_type -- helper function to get self.data_type
      * Parameters: void
      * Return: self.data_type (&str) - data_typ
@@ -80,7 +75,6 @@ impl Storage {
     pub fn get_data_type(&self) -> &String {
         &self.data_type
     }
-
 
     /* char_to_u8 -- helper function to convert (hex/base64) char to u8
      *               (note: we don't want self here because we want to be able to use this
@@ -116,7 +110,6 @@ impl Storage {
         }
     }
 
-
     /* u8_to_char -- helper function to convert (hex/base64) u8 to char
      *               (note: we don't want self here because we want to be able to use this
      *               outside of this struct / want to use this in constructor)
@@ -149,7 +142,6 @@ impl Storage {
         }
     }
 
-
     /* print -- helper function to print self.data Vec<u8>
      * Parameters: void
      * Return: void
@@ -157,7 +149,6 @@ impl Storage {
     pub fn print(&self) {
         println!("{}", self.to_string());
     }
-
 
     /* to_string -- helper function to convert self.data Vec<u8> to string
      * Parameters: void
@@ -169,7 +160,6 @@ impl Storage {
             .map(|i| Storage::u8_to_char(*i, self.data_type.as_str()))
             .collect()
     }
-
 
     /* change_base -- convert old_base to new_init_base
      * handles hex -> base64, base64 -> hex, ascii -> hex, hex -> ascii,
@@ -377,11 +367,10 @@ impl Storage {
         }
     }
 
-
     /* index -- returns a storage that contains the elements inside of the range.
      * Parameters: left (usize) - starting index (starting element included)
      *             right (usize) - ending index (ending element not included)
-     * Return: Storage - Storage containing the data of the previous storage 
+     * Return: Storage - Storage containing the data of the previous storage
      * in range of the two indices
      */
     pub fn index(&self, left: usize, right: usize) -> Storage {
@@ -397,7 +386,7 @@ impl Storage {
 
         Storage {
             data: self.data[left..right].to_vec(),
-            data_type: self.get_data_type().to_string()
+            data_type: self.get_data_type().to_string(),
         }
     }
 }
@@ -788,13 +777,12 @@ mod tests {
         assert_eq!("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d", hex.to_string());
     }
 
-
     // TEST index
     // TODO: add indexing tests for other bases
     #[test]
     fn check_index() {
         let s = Storage::new_init("hello world", "ascii");
-        
+
         assert_eq!("h", s.index(0, 1).to_string());
         assert_eq!("e", s.index(1, 2).to_string());
         assert_eq!("he", s.index(0, 2).to_string());
@@ -815,21 +803,20 @@ mod tests {
         let s = Storage::new_init("hello world", "ascii");
         s.index(11, 11);
     }
-    
+
     #[test]
     #[should_panic]
     fn check_invalid_right_index() {
         let s = Storage::new_init("hello world", "ascii");
         s.index(0, 400);
     }
-        
+
     #[test]
     #[should_panic]
     fn check_invalid_left_index_greater_than_right_index() {
         let s = Storage::new_init("hello world", "ascii");
         s.index(5, 0);
     }
-
 
     // TEST XOR - overloaded Bitwise XOR operator
     #[test]
