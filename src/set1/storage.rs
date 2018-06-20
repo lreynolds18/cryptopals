@@ -20,6 +20,7 @@ impl Storage {
         }
     }
 
+
     /* new_init -- constructor for storage
      * converts string to vec<u8>
      * assuming str_inp is in it's respected format of data_type (hex / base64)
@@ -33,6 +34,7 @@ impl Storage {
             data_type: String::from(data_type),
         }
     }
+
 
     /* build_data -- helper function to build self.data
      * Parameters: str_inp (&str) - input string,
@@ -50,6 +52,7 @@ impl Storage {
             .collect()
     }
 
+
     /* set_data -- helper function to set self.data and self.data_type
      * Parameters: str_inp (&str) - input string,
      *             data_type (&str) - data type of input string (hex or base64)
@@ -60,6 +63,7 @@ impl Storage {
         self.data_type = String::from(data_type);
     }
 
+
     /* get_data -- helper function to get self.data
      * Parameters: void
      * Return: self.data (Vec<u8>) - data in vector format
@@ -67,6 +71,7 @@ impl Storage {
     pub fn get_data(&self) -> &Vec<u8> {
         &self.data
     }
+
 
     /* get_data_type -- helper function to get self.data_type
      * Parameters: void
@@ -76,6 +81,7 @@ impl Storage {
         &self.data_type
     }
 
+
     /* char_to_u8 -- helper function to convert (hex/base64) char to u8
      *               (note: we don't want self here because we want to be able to use this
      *               outside of this struct / want to use this in constructor)
@@ -83,7 +89,7 @@ impl Storage {
      *             data_type (&str) - base of the char to convert to
      * Return: u (u8) - binary representation of character (0000-1111) or (000000-111111)
      */
-    fn char_to_u8(c: char, data_type: &str) -> u8 {
+    pub fn char_to_u8(c: char, data_type: &str) -> u8 {
         let u = c as u8;
         if data_type == "hex" {
             // HEX
@@ -110,6 +116,7 @@ impl Storage {
         }
     }
 
+
     /* u8_to_char -- helper function to convert (hex/base64) u8 to char
      *               (note: we don't want self here because we want to be able to use this
      *               outside of this struct / want to use this in constructor)
@@ -117,7 +124,7 @@ impl Storage {
      *             data_type (&str) - base of the char to convert to
      * Return: u (u8) - Character between (0-9, a-f) or (A-Z, a-z, 0-9, +, /)
      */
-    fn u8_to_char(u: u8, data_type: &str) -> char {
+    pub fn u8_to_char(u: u8, data_type: &str) -> char {
         if data_type == "hex" {
             // HEX
             match u {
@@ -142,6 +149,7 @@ impl Storage {
         }
     }
 
+
     /* print -- helper function to print self.data Vec<u8>
      * Parameters: void
      * Return: void
@@ -149,6 +157,7 @@ impl Storage {
     pub fn print(&self) {
         println!("{}", self.to_string());
     }
+
 
     /* to_string -- helper function to convert self.data Vec<u8> to string
      * Parameters: void
@@ -160,6 +169,7 @@ impl Storage {
             .map(|i| Storage::u8_to_char(*i, self.data_type.as_str()))
             .collect()
     }
+
 
     /* change_base -- convert old_base to new_init_base
      * handles hex -> base64, base64 -> hex, ascii -> hex, hex -> ascii,
@@ -367,38 +377,29 @@ impl Storage {
         }
     }
 
-    /* split_by_keysize -- returns two storages with the first keysize of elements in
-     * the first storage and the second keysize of elements in the second storage.
-     * Parameters: keysize (usize) - Number of characters in each storage
-     * Return: (Storage, Storage) - lhs is first keysize elements in a Storage and rhs
-     * is second keysize elements in a Storage
+
+    /* index -- returns a storage that contains the elements inside of the range.
+     * Parameters: left (usize) - starting index (starting element included)
+     *             right (usize) - ending index (ending element not included)
+     * Return: Storage - Storage containing the data of the previous storage 
+     * in range of the two indices
      */
-    pub fn split_by_keysize(&self, keysize: usize) -> (Storage, Storage) {
-        if self.data.len() < 2 * keysize {
-            panic!("Error: not enough items in data");
+    pub fn index(&self, left: usize, right: usize) -> Storage {
+        if left >= self.data.len() {
+            panic!("Error: left index must be in range of data");
+        }
+        if right > self.data.len() {
+            panic!("Error: right index must be in range of data");
+        }
+        if left > right {
+            panic!("Error: left index cannot be greater than right index");
         }
 
-        (
-            Storage {
-                data: self.data[0..keysize].to_vec(),
-                data_type: self.get_data_type().to_string(),
-            },
-            Storage {
-                data: self.data[keysize..2 * keysize].to_vec(),
-                data_type: self.get_data_type().to_string(),
-            },
-        )
+        Storage {
+            data: self.data[left..right].to_vec(),
+            data_type: self.get_data_type().to_string()
+        }
     }
-
-    // TODO OR NOT TODO
-  /*
-  pub fn index(&self, left: usize, right: usize) -> Storage {
-    Storage {
-      data: self.data[left..right] 
-      data_type: &self.data_type
-    }
-  }
-  */
 }
 
 // XOR implementation for Storage ^ Storage = Storage
@@ -787,33 +788,48 @@ mod tests {
         assert_eq!("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d", hex.to_string());
     }
 
-    // TEST SPLIT ON KEYSIZE INTO SEPERATE STRING - split_on_keysize_into_seperate_string
-    // TODO: add tests and test invalid cases
-    #[test]
-    fn check_split_by_keysize() {
-        let s = Storage::new_init("hello world", "ascii");
-        let ans_vec = vec![
-            vec!["h", "e"],         // 1
-            vec!["he", "ll"],       // 2
-            vec!["hel", "lo "],     // 3
-            vec!["hell", "o wo"],   // 4
-            vec!["hello", " worl"], // 5
-        ];
 
-        for i in 1usize..6usize {
-            let (lhs, rhs) = s.split_by_keysize(i);
-            assert_eq!(ans_vec[i - 1][0], lhs.to_string());
-            assert_eq!(ans_vec[i - 1][1], rhs.to_string());
-        }
+    // TEST index
+    // TODO: add indexing tests for other bases
+    #[test]
+    fn check_index() {
+        let s = Storage::new_init("hello world", "ascii");
+        
+        assert_eq!("h", s.index(0, 1).to_string());
+        assert_eq!("e", s.index(1, 2).to_string());
+        assert_eq!("he", s.index(0, 2).to_string());
+        assert_eq!("ll", s.index(2, 4).to_string());
+        assert_eq!("hel", s.index(0, 3).to_string());
+        assert_eq!("lo ", s.index(3, 6).to_string());
+        assert_eq!("hell", s.index(0, 4).to_string());
+        assert_eq!("o wo", s.index(4, 8).to_string());
+        assert_eq!("hello", s.index(0, 5).to_string());
+        assert_eq!(" worl", s.index(5, 10).to_string());
+        assert_eq!("hello world", s.index(0, 11).to_string());
+        assert_eq!("", s.index(0, 0).to_string());
     }
 
     #[test]
     #[should_panic]
-    fn check_invalid_split_by_keysize() {
+    fn check_invalid_left_index() {
         let s = Storage::new_init("hello world", "ascii");
-
-        s.split_by_keysize(6);
+        s.index(11, 11);
     }
+    
+    #[test]
+    #[should_panic]
+    fn check_invalid_right_index() {
+        let s = Storage::new_init("hello world", "ascii");
+        s.index(0, 400);
+    }
+        
+    #[test]
+    #[should_panic]
+    fn check_invalid_left_index_greater_than_right_index() {
+        let s = Storage::new_init("hello world", "ascii");
+        s.index(5, 0);
+    }
+
 
     // TEST XOR - overloaded Bitwise XOR operator
     #[test]
@@ -921,15 +937,4 @@ mod tests {
         let rhs = Storage::new_init("01234abcd", "hex");
         &lhs ^ &rhs;
     }
-
-    /*
-  #[test]
-  fn check_indexing() {
-    let s = Storage::new_init("abc", "ascii");
-    let ans = s.index(0);
-    // assert_eq!('a', ans);
-    assert_eq!("a", ans.to_string());
-    assert_eq!("ascii", ans.get_data_type());
-  }
-  */
 }

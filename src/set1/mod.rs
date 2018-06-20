@@ -3,7 +3,6 @@ pub mod storage;
 
 use self::storage::Storage;
 use std::fs;
-use std::io::prelude::*;
 
 /* hex_to_base64 -- Set 1, Challenge 1
  * http://cryptopals.com/sets/1/challenges/1
@@ -143,6 +142,7 @@ pub fn repeating_key_xor_encrypt(
     ans.to_string()
 }
 
+
 /* break_repeating_key_xor -- Set 1, Challenge 6
  * http://cryptopals.com/sets/1/challenges/6
  * File has been base64'd after being encrypted with repeating-key XOR.
@@ -179,13 +179,25 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
     // Step 1-4 - Figure out keysize (theoretically we should use a minheap)
     let mut keysize: Vec<usize> = vec![0, 0, 0];
     let mut min_nor_dist: Vec<f64> = vec![1.0f64 / 0.0f64, 1.0f64 / 0.0f64, 1.0f64 / 0.0f64]; // set as MAX
+    // let mut min_nor_dist: Vec<f64> = vec![0f64, 0f64, 0f64];
     let mut tmp: f64;
     let mut t = vec![];
 
-    for i in 2usize..41usize {
-        let (lhs, rhs) = file_contents.split_by_keysize(i);
+    for i in 6usize..41usize {
+        let lhs1 = file_contents.index(0, i);
+        let lhs2 = file_contents.index(2*i, 3*i);
+        let lhs3 = file_contents.index(4*i, 5*i);
 
-        tmp = helper::hamming_distance(&lhs, &rhs) as f64 / i as f64;
+        let rhs1 = file_contents.index(i, 2*i);
+        let rhs2 = file_contents.index(3*i, 4*i);
+        let rhs3 = file_contents.index(5*i, 6*i);
+
+        let hd1 = helper::hamming_distance(&lhs1, &rhs1);
+        let hd2 = helper::hamming_distance(&lhs2, &rhs2);
+        let hd3 = helper::hamming_distance(&lhs3, &rhs3);
+
+        tmp = (hd1+hd2+hd3) as f64 / (3 * i) as f64;
+
         t.push(tmp);
         if tmp < min_nor_dist[0] {
             min_nor_dist[2] = min_nor_dist[1];
@@ -205,7 +217,8 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
         }
     }
     println!("{:?}", keysize);
-    // println!("{:?}", t);
+    println!("{:?}", t);
+    println!("{:?}", t[30]);
 
     // keysize = vec!(4, 8, 12, 16, 20, 24, 28, 32, 36, 40);
     keysize = vec![29];
@@ -241,9 +254,9 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
 
         key_obj = Storage::new_init(&key_string, "ascii");
         ans = &file_contents ^ &key_obj;
-        // fs::write("./tmp/".to_owned() + &key.to_string() + &".txt".to_owned(), ans.to_string())
-        //     .expect("Unable to write file");
     }
 
-    (ans.to_string(), key_string, keysize[0])
+    // (ans.to_string(), key_string, keysize[0])
+    ("".to_string(), key_string, keysize[0])
 }
+

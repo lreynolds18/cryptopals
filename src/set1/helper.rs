@@ -53,6 +53,7 @@ pub fn hamming_distance(lhs: &Storage, rhs: &Storage) -> i32 {
         .sum()
 }
 
+
 /* char_freq -- helper function that returns the character frequency
  * Using frequencies from http://www.fitaly.com/board/domper3/posts/136.html
  * Parameters: str_inp (&str) - input string (ascii)
@@ -62,6 +63,7 @@ pub fn char_freq(str_inp: &str) -> f32 {
     // english char freq pulled from wikipedia
     let freq: HashMap<u8, f32> = [
         (9, 0.0057),
+        (10, 10.0),
         (23, 0.0000),
         (32, 17.1662),
         (33, 0.0072),
@@ -171,6 +173,7 @@ pub fn char_freq(str_inp: &str) -> f32 {
     count
 }
 
+
 /* split_into_blocks -- splits a storage into keysizes and then splits each keysize into blocks
  * Parameters: keysize (usize) - Number of characters that we want to split by
  * Return: out Vec<Storage> - Vector of Storage where each Storage contains the nth elements in each keysize
@@ -204,6 +207,22 @@ mod tests {
         let rhs = Storage::new_init("wokka wokka!!!", "ascii");
 
         assert_eq!(37, hamming_distance(&lhs, &rhs));
+    }
+
+    #[test]
+    fn check_hamming_distance_ascii_2() {
+        let lhs = Storage::new_init("hEllO ! 2A3", "ascii");
+        let rhs = Storage::new_init("good BYE wo", "ascii");
+    
+        assert_eq!(37, hamming_distance(&lhs, &rhs));
+    }
+
+    #[test]
+    fn check_hamming_distance_ascii_3() {
+        let lhs = Storage::new_init("123", "ascii");
+        let rhs = Storage::new_init("BYE", "ascii");
+    
+        assert_eq!(15, hamming_distance(&lhs, &rhs));
     }
 
     #[test]
