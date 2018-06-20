@@ -52,9 +52,9 @@ fn main() {
 
     // Set 1, Challenge 4
     println!("Set 1, Challenge 4 - Detect single-character XOR");
-    println!("Input File: set1challenge4.txt");
+    println!("Input File: ./input_files/set1challenge4.txt");
     let (ans_message4, ans_key4, ans_line4) =
-        set1::detect_single_character_xor("./set1challenge4.txt");
+        set1::detect_single_character_xor("./input_files/set1challenge4.txt");
 
     print!("Ans message: Now that the party is jumping\n");
     print!("Res message: {}", ans_message4);
@@ -70,13 +70,11 @@ fn main() {
         "Input String: Burning 'em, if you ain't quick and nimble\nI go craz\
          y when I hear a cymbal"
     );
-
     println!("Input key: ICE");
     println!(
         "Ans: 0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a2622\
          6324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f"
     );
-
     println!(
         "Res: {}",
         set1::repeating_key_xor_encrypt(
@@ -87,18 +85,26 @@ fn main() {
             "ascii"
         )
     );
-
     println!();
 
     // Set 1, Challenge 6
     println!("Set 1, Challenge 6 - Break repeating-key XOR");
-    println!("Input File: set1challenge6.txt");
+    println!("Input File: ./input_files/set1challenge6.txt");
     let (ans_message6, ans_key6, ans_keysize6) =
-        set1::break_repeating_key_xor("./set1challenge6.txt");
+        set1::break_repeating_key_xor("./input_files/set1challenge6.txt");
 
     println!("Res message: {}", ans_message6);
     println!("Ans key: Terminator X: Bring the noise");
     println!("Res key: {}", ans_key6);
     println!("Ans keysize: 29");
     println!("Res keysize: {}", ans_keysize6);
+    println!();
+
+    // Set 1, Challenge 7
+    println!("Set 1, Challenge 7 - Decrypt AES-128-ECB given key");
+    println!("Input File: ./input_files/set1challenge7.txt");
+    let ans_message7 =
+        set1::decrypt_aes_128_ecb("./input_files/set1challenge7.txt", "YELLOW SUBMARINE");
+    println!("Res message: {}", ans_message7);
+    println!();
 }

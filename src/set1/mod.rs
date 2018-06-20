@@ -204,7 +204,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
     let mut result_char = String::new();
     let mut max_freq: f32;
     let mut tmp_freq: f32;
-    let mut ans = Storage::new();
+    let mut ans;
 
     let blocks = helper::split_into_blocks(&file_contents, keysize);
 
@@ -227,4 +227,23 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
     ans = &file_contents ^ &key_obj;
 
     (ans.to_string(), key_string, keysize)
+}
+
+/* decrypt_aes_128_ecb -- Set 1, Challenge 7
+ * http://cryptopals.com/sets/1/challenges/7
+ * The Base64-encoded content in this file has been encrypted via AES-128 in ECB mode under the key
+ * "YELLOW SUBMARINE". (case-sensitive, without the quotes; exactly 16 characters; I like
+ * "YELLOW SUBMARINE" because it's exactly 16 bytes long, and now you do too).
+ * Decrypt it. You know the key, after all.
+ * Parameters: filename (&str) - Input File
+ *             key (&str) - String used to encrypt message
+ * Return: String - Secret message
+ */
+pub fn decrypt_aes_128_ecb(filename: &str, key: &str) -> String {
+    let contents = fs::read_to_string(filename).expect("Error: Unable to read file");
+
+    let mut file_contents = Storage::new_init(&contents.replace("\n", ""), "base64");
+    file_contents.change_base("ascii");
+
+    "".to_string()
 }
