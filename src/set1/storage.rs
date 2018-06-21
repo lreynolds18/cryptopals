@@ -33,7 +33,7 @@ impl Storage {
     pub fn new_init(str_inp: &str, data_type: &str) -> Storage {
         Storage {
             data: Storage::build_data(str_inp, data_type),
-            data_type: data_type.to_owned()
+            data_type: data_type.to_owned(),
         }
     }
 
@@ -45,7 +45,7 @@ impl Storage {
     pub fn new_init_vec(vec_inp: &Vec<u8>, data_type: &str) -> Storage {
         Storage {
             data: vec_inp.to_vec(),
-            data_type: data_type.to_owned()
+            data_type: data_type.to_owned(),
         }
     }
 
@@ -603,7 +603,6 @@ mod tests {
         assert_eq!("ascii", s.get_data_type());
         assert_eq!(&ascii_vec, s.get_data());
     }
-
 
     // TEST len
     #[test]

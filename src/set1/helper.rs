@@ -53,7 +53,6 @@ pub fn hamming_distance(lhs: &Storage, rhs: &Storage) -> i32 {
         .sum()
 }
 
-
 /* char_freq -- helper function that returns the character frequency
  * Using frequencies from http://www.fitaly.com/board/domper3/posts/136.html
  * Parameters: str_inp (&str) - input string (ascii)
@@ -173,7 +172,6 @@ pub fn char_freq(str_inp: &str) -> f32 {
     count
 }
 
-
 /* split_into_blocks -- splits a storage into keysizes and then splits each keysize into blocks
  * Parameters: keysize (usize) - Number of characters that we want to split by
  * Return: out Vec<Storage> - Vector of Storage where each Storage contains the nth elements in each keysize
@@ -196,7 +194,6 @@ pub fn split_into_blocks(s: &Storage, keysize: usize) -> Vec<Storage> {
     holder.iter().map(|v| Storage::new_init(v, dt)).collect()
 }
 
-
 /* add_round_key -- a Round Key is added to the State by a simple
  * bitwise XOR operation
  * Parameters: state (Storage) - Encrypted objected to decrypt
@@ -206,7 +203,6 @@ pub fn split_into_blocks(s: &Storage, keysize: usize) -> Vec<Storage> {
 pub fn add_round_key(state: &Storage, key: &Storage) -> Storage {
     state ^ key
 }
-
 
 /* inv_shift_rows -- inv shift to the right
  * shift the first column 0 to the right
@@ -229,12 +225,13 @@ pub fn inv_shift_rows(state: &Storage) -> Storage {
     }
 
     let b = state.get_data();
-    let d = vec!(b[0], b[13], b[10], b[7], b[4], b[1], b[14], b[11], 
-             b[8], b[5], b[2], b[15], b[12], b[9], b[6], b[3]); 
+    let d = vec![
+        b[0], b[13], b[10], b[7], b[4], b[1], b[14], b[11], b[8], b[5], b[2], b[15], b[12], b[9],
+        b[6], b[3],
+    ];
 
     Storage::new_init_vec(&d, state.get_data_type())
 }
-
 
 /* inv_sub_bytes -- subsitute bytes based on Inverse S-Box
  * Parameters: state (Storage) - Encrypted objected to decrypt
@@ -497,13 +494,11 @@ pub fn inv_sub_bytes(state: &Storage) {
         (0xfc, 0x55),
         (0xfd, 0x21),
         (0xfe, 0x0c),
-        (0xff, 0x7d)
+        (0xff, 0x7d),
     ].iter()
         .cloned()
         .collect();
-
 }
-
 
 /* inv_mix_columns -- Reverse MixCol by multiplying by a^-1
  * a^-1 = [0e 0b 0d 09] [S_0,c]
@@ -517,7 +512,6 @@ pub fn inv_sub_bytes(state: &Storage) {
 pub fn inv_mix_columns(state: &Storage) {
     state.print();
 }
-
 
 /* inv_cipher -- AES decyption algorithm
  * Parameters: bytes_in (Storage) - Encrypted objected to decrypt
@@ -542,7 +536,6 @@ pub fn inv_cipher_aes_128(bytes_in: &Storage, word: &str) {
     add_round_key(state, word);
     */
 }
-
 
 #[cfg(test)]
 mod tests {
