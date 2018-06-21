@@ -2,6 +2,9 @@ use std::ops;
 
 // TODO: ownership? who owns what and why
 // TODO: clean up change base
+// TODO: implement display trait instead of to_string and print
+// TODO: only use Storage {} dec and only use self.data and self.data_type in here
+// TODO: consider to_owned() instead of to_string()
 
 pub struct Storage {
     data: Vec<u8>,
@@ -22,15 +25,27 @@ impl Storage {
 
     /* new_init -- constructor for storage
      * converts string to vec<u8>
-     * assuming str_inp is in it's respected format of data_type (hex / base64)
+     * assuming str_inp is in it's respected format of data_type (hex, base64, or ascii)
      * Parameters: str_inp (&str) - input string,
-     *             data_type (&str) - data type of input string (hex or base64)
+     *             data_type (&str) - data type of input string (hex, base64, or ascii)
      * Return: Storage (w/ data and data_type)
      */
     pub fn new_init(str_inp: &str, data_type: &str) -> Storage {
         Storage {
             data: Storage::build_data(str_inp, data_type),
-            data_type: String::from(data_type),
+            data_type: data_type.to_owned()
+        }
+    }
+
+    /* new_init_vec -- constructor for storage
+     * Parameters: vec_inp (&vec) - input vector,
+     *             data_type (&str) - data type of input string (hex, base64, or ascii)
+     * Return: Storage (w/ data and data_type)
+     */
+    pub fn new_init_vec(vec_inp: &Vec<u8>, data_type: &str) -> Storage {
+        Storage {
+            data: vec_inp.to_vec(),
+            data_type: data_type.to_owned()
         }
     }
 
@@ -60,6 +75,16 @@ impl Storage {
         self.data_type = String::from(data_type);
     }
 
+    /* set_data_vec -- helper function to set self.data and self.data_type
+     * Parameters: str_inp (&str) - input string,
+     *             data_type (&str) - data type of input string (hex or base64)
+     * Return: void
+     */
+    pub fn set_data_vec(&mut self, vec_inp: &Vec<u8>, data_type: &str) {
+        self.data = vec_inp.to_vec();
+        self.data_type = data_type.to_string();
+    }
+
     /* get_data -- helper function to get self.data
      * Parameters: void
      * Return: self.data (Vec<u8>) - data in vector format
@@ -74,6 +99,14 @@ impl Storage {
      */
     pub fn get_data_type(&self) -> &String {
         &self.data_type
+    }
+
+    /* len -- helper function to get self.data.len()
+     * Parameters: void
+     * Return: self.data.len() (usize) - length of data
+     */
+    pub fn len(&self) -> usize {
+        self.data.len()
     }
 
     /* char_to_u8 -- helper function to convert (hex/base64) char to u8
@@ -459,9 +492,9 @@ mod tests {
             "base64",
         );
         Storage::new_init(
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", 
-      "ascii"
-    );
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", 
+            "ascii"
+        );
     }
 
     #[test]
@@ -569,6 +602,27 @@ mod tests {
         assert_eq!("tESt One!32/(*&", s.to_string());
         assert_eq!("ascii", s.get_data_type());
         assert_eq!(&ascii_vec, s.get_data());
+    }
+
+
+    // TEST len
+    #[test]
+    fn check_len() {
+        let s1 = Storage::new();
+        let s2 = Storage::new_init("0123456789abcdef", "hex");
+        let s3 = Storage::new_init(
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/+",
+            "base64",
+        );
+        let s4 = Storage::new_init(
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./;'[]<>?:\"{{}}-_=+`~!@#$%^&*()", 
+            "ascii"
+        );
+
+        assert_eq!(0, s1.len());
+        assert_eq!(16, s2.len());
+        assert_eq!(64, s3.len());
+        assert_eq!(94, s4.len());
     }
 
     // TEST char_to_u8
