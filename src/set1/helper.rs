@@ -398,8 +398,25 @@ pub fn inv_mix_columns(
     mul_11: &Vec<u8>,
     mul_13: &Vec<u8>,
     mul_14: &Vec<u8>,
-) {
-
+) -> Storage {
+    // assuming that d len is 16
+    let d = state.get_data();
+    let mut out = Vec::new();
+    for c in d.chunks(4) {
+        let s0_p = mul_14[c[0] as usize] ^ mul_11[c[1] as usize] ^ mul_13[c[2] as usize]
+            ^ mul_9[c[3] as usize];
+        let s1_p = mul_9[c[0] as usize] ^ mul_14[c[1] as usize] ^ mul_11[c[2] as usize]
+            ^ mul_13[c[3] as usize];
+        let s2_p = mul_13[c[0] as usize] ^ mul_9[c[1] as usize] ^ mul_14[c[2] as usize]
+            ^ mul_11[c[3] as usize];
+        let s3_p = mul_11[c[0] as usize] ^ mul_13[c[1] as usize] ^ mul_9[c[2] as usize]
+            ^ mul_14[c[3] as usize];
+        out.push(s0_p);
+        out.push(s1_p);
+        out.push(s2_p);
+        out.push(s3_p);
+    }
+    Storage::new_init_vec(&out, state.get_data_type())
 }
 
 /* inv_cipher -- AES decyption algorithm
@@ -407,22 +424,22 @@ pub fn inv_mix_columns(
  *             key (&str) - Key used to encrypt object
  * Return: state Storage - Bytes after AES decryption
  */
-pub fn inv_cipher_aes_128(bytes_in: &Storage, word: &str) {
+pub fn inv_cipher_aes_128(bytes_in: &Storage, key: &Storage) {
     let state = bytes_in;
 
     /*
-    add_round_key(state, word);
+    state = add_round_key(state, key);
 
     for i in 0i32..10i32 {
-        inv_shift_rows(state);
-        inv_sub_bytes(state);
-        add_round_key(state, word);
-        inv_mix_columns(state);
+        state = inv_shift_rows(state);
+        state = inv_sub_bytes(state);
+        state = add_round_key(state, key);
+        state = inv_mix_columns(state);
     }
     
-    inv_shift_rows(state);
-    inv_sub_bytes(state);
-    add_round_key(state, word);
+    state = inv_shift_rows(state);
+    state = inv_sub_bytes(state);
+    state = add_round_key(state, key);
     */
 }
 

@@ -247,12 +247,11 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
 pub fn decrypt_aes_128_ecb(filename: &str, key: &str) -> String {
     let contents = fs::read_to_string(filename).expect("Error: Unable to read file");
 
-    let mut file_contents = Storage::new_init(&contents.replace("\n", ""), "base64");
-    println!("{}", file_contents.len());
-    file_contents.change_base("ascii");
+    let mut input_storage = Storage::new_init(&contents.replace("\n", ""), "base64");
+    let key_storage = Storage::new_init(key, "ascii");
 
-    println!("{}", file_contents.len());
+    input_storage.change_base("ascii");
 
-    helper::inv_cipher_aes_128(&file_contents, key);
+    helper::inv_cipher_aes_128(&input_storage, &key_storage);
     "".to_string()
 }
