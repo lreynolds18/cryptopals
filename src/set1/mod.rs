@@ -243,7 +243,11 @@ pub fn decrypt_aes_128_ecb(filename: &str, key: &str) -> String {
     let contents = fs::read_to_string(filename).expect("Error: Unable to read file");
 
     let mut file_contents = Storage::new_init(&contents.replace("\n", ""), "base64");
+    println!("{}", file_contents.get_data().len());
     file_contents.change_base("ascii");
 
+    println!("{}", file_contents.get_data().len());
+
+    helper::inv_cipher_aes_128(&file_contents, key);
     "".to_string()
 }
