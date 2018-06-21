@@ -194,7 +194,7 @@ pub fn split_into_blocks(s: &Storage, keysize: usize) -> Vec<Storage> {
     holder.iter().map(|v| Storage::new_init(v, dt)).collect()
 }
 
-/* add_round_key -- a Round Key is added to the State by a simple 
+/* add_round_key -- a Round Key is added to the State by a simple
  * bitwise XOR operation
  * Parameters: state (Storage) - Encrypted objected to decrypt
  *             key (&str) - Key used to encrypt object
@@ -204,7 +204,7 @@ pub fn add_round_key(state: &Storage, key: &str) {
     state.print();
 }
 
-/* inv_shift_rows -- inv shift to the right 
+/* inv_shift_rows -- inv shift to the right
  * shift the first column 0 to the right
  * shift the second column 1 to the right
  * shift the third column 2 to the right
@@ -219,11 +219,10 @@ pub fn add_round_key(state: &Storage, key: &str) {
  * Return: state Storage - Bytes after AES decryption
  */
 pub fn inv_shift_rows(state: &Storage) {
-
     state.print();
 }
 
-/* inv_sub_bytes -- subsitute bytes based on Inverse S-Box 
+/* inv_sub_bytes -- subsitute bytes based on Inverse S-Box
  * Parameters: state (Storage) - Encrypted objected to decrypt
  * Return: state Storage - Bytes after AES decryption
  */
@@ -231,7 +230,7 @@ pub fn inv_sub_bytes(state: &Storage) {
     state.print();
 }
 
-/* inv_mix_columns -- Reverse MixCol by multiplying by a^-1 
+/* inv_mix_columns -- Reverse MixCol by multiplying by a^-1
  * a^-1 = [0e 0b 0d 09] [S_0,c]
  *        [09 0e 0b 0d] [s_1,c]
  *        [0d 09 0e 0b] [s_2,c]
@@ -244,7 +243,7 @@ pub fn inv_mix_columns(state: &Storage) {
     state.print();
 }
 
-/* inv_cipher -- AES decyption algorithm 
+/* inv_cipher -- AES decyption algorithm
  * Parameters: bytes_in (Storage) - Encrypted objected to decrypt
  *             key (&str) - Key used to encrypt object
  * Return: state Storage - Bytes after AES decryption
