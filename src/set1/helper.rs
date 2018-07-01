@@ -204,45 +204,6 @@ pub fn split_into_blocks(s: &Storage, keysize: usize) -> Vec<Storage> {
     holder.iter().map(|v| Storage::new_init(v, dt)).collect()
 }
 
-/* add_round_key -- a Round Key is added to the State by a simple
- * bitwise XOR operation
- * Parameters: state (Storage) - Encrypted objected to decrypt
- *             key (&str) - Key used to encrypt object
- * Return: state Storage - Bytes after AES decryption
- */
-pub fn add_round_key(state: &Storage, key: &Storage) -> Storage {
-    state ^ key
-}
-
-/* inv_shift_rows -- inv shift to the right
- * shift the first column 0 to the right
- * shift the second column 1 to the right
- * shift the third column 2 to the right
- * shift the fourth column 3 to the right
- *
- *  B0  B4  B8 B12       B0  B4  B8 B12
- *  B1  B5  B9 B13  --> B13  B1  B5  B9
- *  B2  B6 B10 B14  --> B10 B14  B2  B6
- *  B3  B7 B11 B15       B7 B11 B15  B3
- *
- * Parameters: bytes_in (Storage) - Encrypted objected to decrypt
- * Return: state Storage - Bytes after AES decryption
- */
-pub fn inv_shift_rows(state: &Storage) -> Storage {
-    // assuming we have 16 bytes (128 bits)
-    if state.len() > 16 {
-        println!("Uh oh");
-    }
-
-    let b = state.get_data();
-    let d = vec![
-        b[0], b[13], b[10], b[7], b[4], b[1], b[14], b[11], b[8], b[5], b[2], b[15], b[12], b[9],
-        b[6], b[3],
-    ];
-
-    Storage::new_init_vec(&d, state.get_data_type())
-}
-
 /* get_aes_128_lookup_tables -- helper function that return gaussian field multiplication lookup tables
  * as well as gaussian field mult and affine transformation for inverse byte substitution
  * We ideally want to write this to memory once
@@ -363,6 +324,45 @@ pub fn get_aes_128_lookup_tables() -> (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u
     (inverse_s_box, mul_9, mul_11, mul_13, mul_14)
 }
 
+/* add_round_key -- a Round Key is added to the State by a simple
+ * bitwise XOR operation
+ * Parameters: state (Storage) - Encrypted objected to decrypt
+ *             key (&str) - Key used to encrypt object
+ * Return: state Storage - Bytes after AES decryption
+ */
+pub fn add_round_key(state: &Storage, key: &Storage) -> Storage {
+    state ^ key
+}
+
+/* inv_shift_rows -- inv shift to the right
+ * shift the first column 0 to the right
+ * shift the second column 1 to the right
+ * shift the third column 2 to the right
+ * shift the fourth column 3 to the right
+ *
+ *  B0  B4  B8 B12       B0  B4  B8 B12
+ *  B1  B5  B9 B13  --> B13  B1  B5  B9
+ *  B2  B6 B10 B14  --> B10 B14  B2  B6
+ *  B3  B7 B11 B15       B7 B11 B15  B3
+ *
+ * Parameters: bytes_in (Storage) - Encrypted objected to decrypt
+ * Return: state Storage - Bytes after AES decryption
+ */
+pub fn inv_shift_rows(state: &Storage) -> Storage {
+    // assuming we have 16 bytes (128 bits)
+    if state.len() != 16 {
+        println!("Uh oh");
+    }
+
+    let b = state.get_data();
+    let d = vec![
+        b[0], b[13], b[10], b[7], b[4], b[1], b[14], b[11], b[8], b[5], b[2], b[15], b[12], b[9],
+        b[6], b[3],
+    ];
+
+    Storage::new_init_vec(&d, state.get_data_type())
+}
+
 /* inv_sub_bytes -- subsitute bytes based on Inverse S-Box
  * Parameters: state (Storage) - Encrypted objected to decrypt
  * Return: state Storage - Bytes after AES decryption
@@ -403,18 +403,12 @@ pub fn inv_mix_columns(
     let d = state.get_data();
     let mut out = Vec::new();
     for c in d.chunks(4) {
-        let s0_p = mul_14[c[0] as usize] ^ mul_11[c[1] as usize] ^ mul_13[c[2] as usize]
-            ^ mul_9[c[3] as usize];
-        let s1_p = mul_9[c[0] as usize] ^ mul_14[c[1] as usize] ^ mul_11[c[2] as usize]
-            ^ mul_13[c[3] as usize];
-        let s2_p = mul_13[c[0] as usize] ^ mul_9[c[1] as usize] ^ mul_14[c[2] as usize]
-            ^ mul_11[c[3] as usize];
-        let s3_p = mul_11[c[0] as usize] ^ mul_13[c[1] as usize] ^ mul_9[c[2] as usize]
-            ^ mul_14[c[3] as usize];
-        out.push(s0_p);
-        out.push(s1_p);
-        out.push(s2_p);
-        out.push(s3_p);
+        let (c0, c1, c2, c3): (usize, usize, usize, usize) =
+            (c[0] as usize, c[1] as usize, c[2] as usize, c[3] as usize);
+        out.push(mul_14[c0] ^ mul_11[c1] ^ mul_13[c2] ^ mul_9[c3]);
+        out.push(mul_9[c0] ^ mul_14[c1] ^ mul_11[c2] ^ mul_13[c3]);
+        out.push(mul_13[c0] ^ mul_9[c1] ^ mul_14[c2] ^ mul_11[c3]);
+        out.push(mul_11[c0] ^ mul_13[c1] ^ mul_9[c2] ^ mul_14[c3]);
     }
     Storage::new_init_vec(&out, state.get_data_type())
 }
@@ -425,22 +419,30 @@ pub fn inv_mix_columns(
  * Return: state Storage - Bytes after AES decryption
  */
 pub fn inv_cipher_aes_128(bytes_in: &Storage, key: &Storage) {
-    let state = bytes_in;
-
-    /*
-    state = add_round_key(state, key);
-
-    for i in 0i32..10i32 {
-        state = inv_shift_rows(state);
-        state = inv_sub_bytes(state);
-        state = add_round_key(state, key);
-        state = inv_mix_columns(state);
+    if bytes_in.len() % 16 != 0 {
+        panic!("Error: the length of bytes_in must be divisible by 16");
     }
-    
-    state = inv_shift_rows(state);
-    state = inv_sub_bytes(state);
-    state = add_round_key(state, key);
-    */
+    let (inverse_s_box, mul_9, mul_11, mul_13, mul_14) = get_aes_128_lookup_tables();
+    let end: usize = bytes_in.len() / 16;
+
+    for i in 0usize..end {
+        let mut state = bytes_in.index(i * 16, (i + 1) * 16);
+
+        state = add_round_key(&state, &key);
+
+        for _j in 0..10 {
+            state = inv_shift_rows(&state);
+            state = inv_sub_bytes(&state, &inverse_s_box);
+            state = add_round_key(&state, &key);
+            state = inv_mix_columns(&state, &mul_9, &mul_11, &mul_13, &mul_14);
+        }
+
+        state = inv_shift_rows(&state);
+        state = inv_sub_bytes(&state, &inverse_s_box);
+        state = add_round_key(&state, &key);
+
+        state.print();
+    }
 }
 
 #[cfg(test)]
