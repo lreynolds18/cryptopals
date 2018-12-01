@@ -1,6 +1,8 @@
 pub mod set1;
 
 fn main() {
+    // TODO: refactor.  All of this could be a function
+
     // Set 1, Challenge 1
     println!("Set 1, Challenge 1 - hex to base64");
     println!(

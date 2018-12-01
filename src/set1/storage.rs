@@ -116,6 +116,7 @@ impl Storage {
      *             data_type (&str) - base of the char to convert to
      * Return: u (u8) - binary representation of character (0000-1111) or (000000-111111)
      */
+    // TODO: refactor into char_to_hex, char_to_base64, char_to_ascii
     pub fn char_to_u8(c: char, data_type: &str) -> u8 {
         let u = c as u8;
         // change to one match statement
@@ -151,6 +152,7 @@ impl Storage {
      *             data_type (&str) - base of the char to convert to
      * Return: u (u8) - Character between (0-9, a-f) or (A-Z, a-z, 0-9, +, /)
      */
+    // TODO: refactor into multiple functions.
     pub fn u8_to_char(u: u8, data_type: &str) -> char {
         // change to one match statement
         if data_type == "hex" {
@@ -204,7 +206,8 @@ impl Storage {
      * Return: void
      */
     pub fn change_base(&mut self, new_init_base: &str) {
-        // REFACTOR
+        // TODO: REFACTOR
+        // this is gross
 
         if self.data_type != new_init_base {
             let mut output: Vec<u8> = Vec::new();
