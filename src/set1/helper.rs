@@ -356,10 +356,8 @@ pub fn inv_shift_rows(state: &Storage) -> Storage {
 
     let b = state.get_data();
     let d = vec![
-        b[0], b[13], b[10], b[7], 
-        b[4], b[1], b[14], b[11], 
-        b[8], b[5], b[2], b[15], 
-        b[12], b[9], b[6], b[3],
+        b[0], b[13], b[10], b[7], b[4], b[1], b[14], b[11], b[8], b[5], b[2], b[15], b[12], b[9],
+        b[6], b[3],
     ];
 
     Storage::new_init_vec(&d, state.get_data_type())
