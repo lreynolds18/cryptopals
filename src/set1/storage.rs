@@ -118,6 +118,7 @@ impl Storage {
      */
     pub fn char_to_u8(c: char, data_type: &str) -> u8 {
         let u = c as u8;
+        // change to one match statement
         if data_type == "hex" {
             // HEX
             match u {
@@ -151,6 +152,7 @@ impl Storage {
      * Return: u (u8) - Character between (0-9, a-f) or (A-Z, a-z, 0-9, +, /)
      */
     pub fn u8_to_char(u: u8, data_type: &str) -> char {
+        // change to one match statement
         if data_type == "hex" {
             // HEX
             match u {

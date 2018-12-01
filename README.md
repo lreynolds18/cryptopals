@@ -8,8 +8,8 @@ Completion of the cryptopals challenges (located at http://cryptopals.com) in ru
 - Make the correct choices in terms of code structure, ownership, traits,...
 
 #CURRENTLY DOING
-- Working on set 1, challenge 6
+- Working on set 1, challenge 7
 - Writing tests
 
 #DONE
-- Set 1, challenge 1-5
+- Set 1, challenge 1-6
