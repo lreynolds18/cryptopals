@@ -47,7 +47,7 @@ pub fn fixed_xor(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) -
  */
 pub fn single_byte_xor_cipher(str_inp: &str, str_type: &str) -> (String, char) {
     let s = Storage::new_init(str_inp, str_type);
-    let freq = helper::get_char_freq_table();
+    let freq = helper::freq::get_char_freq_table();
 
     let mut result_string: String = s.to_string();
     let mut result_char: char = '0';
@@ -90,7 +90,7 @@ pub fn detect_single_character_xor(filename: &str) -> (String, String, i32) {
         .map(|c| Storage::new_init(&c.to_string(), "ascii"))
         .collect();
 
-    let freq = helper::get_char_freq_table();
+    let freq = helper::freq::get_char_freq_table();
 
     // results that are going to be returned
     let mut result_string: String = String::new();
@@ -180,7 +180,7 @@ pub fn break_repeating_key_xor(filename: &str) -> (String, String, usize) {
             .map(|c| Storage::new_init(&c.to_string(), "ascii"))
             .collect();
 
-    let freq = helper::get_char_freq_table();
+    let freq = helper::freq::get_char_freq_table();
 
     // Step 1-4 - Figure out keysize (theoretically we should use a minheap)
     let mut keysize: usize = 0;
