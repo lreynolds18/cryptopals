@@ -93,16 +93,39 @@ pub fn split_into_blocks(s: &Storage, keysize: usize) -> Vec<Storage> {
     holder.iter().map(|v| Storage::new_init(v, dt)).collect()
 }
 
+/* calc_key_expansion_core --
+ *
+ */
+pub fn calc_key_expansion_core(key: &Storage, i: usize, s_box: &Vec<u8>, rcon: &Vec<u8>) -> Storage {
+
+  // 1. Rotate left (example - [12, 62, 54, 126] -> [62, 54, 126, 12])
+  let mut v = key.get_data().clone();
+  v.swap(0, 1);
+  v.swap(1, 2);
+  v.swap(2, 3);
+
+  // 2. S-box
+  v[0] = s_box[v[0] as usize];
+  v[1] = s_box[v[1] as usize];
+  v[2] = s_box[v[2] as usize];
+  v[3] = s_box[v[3] as usize];
+
+  // 3. RCon
+  v[0] ^= rcon[i];
+  let temp: Storage = Storage::new_init_vec(&v, key.get_data_type());
+  temp 
+}
+
 /* calc_key_expansion -- calculate key expansion using algorithm
  * expands a 16 byte keys into 11 different 16 byte keys
  * Parameters: key (&Storage) - original key
  * Return: vec<Storage> - 11 different keys
  */
-pub fn calc_key_expansion(key: Storage, s_box: &Vec<u8>) -> Vec<Storage> {
-  let mut keys: Vec<Storage> = vec!();
-
-  keys.push(key);
-
+pub fn calc_key_expansion<'a>(mut keys: Vec<&'a Storage>, s_box: &Vec<u8>, rcon: &Vec<u8>) -> Vec<&'a Storage> {
+  for i in 0..10 {
+      let key_generated: Storage = calc_key_expansion_core(&keys[i], i+1, s_box, rcon);
+      keys.push(&(keys[i] ^ &key_generated));
+  }
   keys
 }
 
@@ -204,18 +227,20 @@ pub fn inv_cipher_aes_128(bytes_in: &Storage, key: &Storage) {
     if bytes_in.len() % 16 != 0 {
         panic!("Error: the length of bytes_in must be divisible by 16");
     }
-    let (s_box, inverse_s_box, mul_9, mul_11, mul_13, mul_14) = aes128lookup::get_aes_128_lookup_tables();
+    let (s_box, inverse_s_box, rcon, mul_9, mul_11, mul_13, mul_14) = aes128lookup::get_aes_128_lookup_tables();
     let end: usize = bytes_in.len() / 16;
 
-    // TODO: create key schedule for 10 times and then use those as key
-    // 
+    
+    let mut keys: Vec<&Storage> = Vec::new();
+    keys.push(key);
+    let ans = calc_key_expansion(keys, &s_box, &rcon);
 
     for i in 0usize..end {
         let mut state = bytes_in.index(i * 16, (i + 1) * 16);
 
         state = add_round_key(&state, &key);
 
-        for _j in 0..13 {
+        for _j in 0..9 {
             state = inv_shift_rows(&state);
             state = inv_sub_bytes(&state, &inverse_s_box);
             state = add_round_key(&state, &key);
@@ -334,4 +359,69 @@ mod tests {
         assert_eq!("od", test3_res[4].to_string());
     }
 
+    #[test]
+    fn check_key_expansion() {
+        let (s_box, _, rcon, _, _, _, _) = aes128lookup::get_aes_128_lookup_tables();
+        let test1_key = Storage::new_init("00000000000000000000000000000000", "base64");
+        let test1_ans: Vec<Storage> = vec![
+          Storage::new_init("00000000000000000000000000000000", "base64"),
+          Storage::new_init("62636363626363636263636362636363", "base64"),
+          Storage::new_init("9b9898c9f9fbfbaa9b9898c9f9fbfbaa", "base64"),
+          Storage::new_init("90973450696ccffaf2f457330b0fac99", "base64"),
+          Storage::new_init("ee06da7b876a1581759e42b27e91ee2b", "base64"),
+          Storage::new_init("7f2e2b88f8443e098dda7cbbf34b9290", "base64"),
+          Storage::new_init("ec614b851425758c99ff09376ab49ba7", "base64"),
+          Storage::new_init("217517873550620bacaf6b3cc61bf09b", "base64"),
+          Storage::new_init("0ef903333ba9613897060a04511dfa9f", "base64"),
+          Storage::new_init("b1d4d8e28a7db9da1d7bb3de4c664941", "base64"),
+          Storage::new_init("b4ef5bcb3e92e21123e951cf6f8f188e", "base64"),
+        ];
+        let test1_res = calc_key_expansion(test1_key, &s_box, &rcon);
+        assert_eq!(test1_ans.len(), test2_ans.len());
+        
+        let test2_key = Storage::new_init("ffffffffffffffffffffffffffffffff", "base64");
+        let test2_ans: Vec<Storage> = vec![
+          Storage::new_init("ffffffffffffffffffffffffffffffff", "base64"),
+          Storage::new_init("e8e9e9e917161616e8e9e9e917161616", "base64"),
+          Storage::new_init("adaeae19bab8b80f525151e6454747f0", "base64"),
+          Storage::new_init("090e2277b3b69a78e1e7cb9ea4a08c6e", "base64"),
+          Storage::new_init("e16abd3e52dc2746b33becd8179b60b6", "base64"),
+          Storage::new_init("e5baf3ceb766d488045d385013c658e6", "base64"),
+          Storage::new_init("71d07db3c6b6a93bc2eb916bd12dc98d", "base64"),
+          Storage::new_init("e90d208d2fbb89b6ed5018dd3c7dd150", "base64"),
+          Storage::new_init("96337366b988fad054d8e20d68a5335d", "base64"),
+          Storage::new_init("8bf03f233278c5f366a027fe0e0514a3", "base64"),
+          Storage::new_init("d60a3588e472f07b82d2d7858cd7c326", "base64"),
+        ];
+        
+        let test3_key = Storage::new_init("000102030405060708090a0b0c0d0e0f", "base64");
+        let test3_ans: Vec<Storage> = vec![
+          Storage::new_init("000102030405060708090a0b0c0d0e0f", "base64"),
+          Storage::new_init("d6aa74fdd2af72fadaa678f1d6ab76fe", "base64"),
+          Storage::new_init("b692cf0b643dbdf1be9bc5006830b3fe", "base64"),
+          Storage::new_init("b6ff744ed2c2c9bf6c590cbf0469bf41", "base64"),
+          Storage::new_init("47f7f7bc95353e03f96c32bcfd058dfd", "base64"),
+          Storage::new_init("3caaa3e8a99f9deb50f3af57adf622aa", "base64"),
+          Storage::new_init("5e390f7df7a69296a7553dc10aa31f6b", "base64"),
+          Storage::new_init("14f9701ae35fe28c440adf4d4ea9c026", "base64"),
+          Storage::new_init("47438735a41c65b9e016baf4aebf7ad2", "base64"),
+          Storage::new_init("549932d1f08557681093ed9cbe2c974e", "base64"),
+          Storage::new_init("13111d7fe3944a17f307a78b4d2b30c5", "base64"),
+        ];
+
+        let test4_key = Storage::new_init("6920e299a5202a6d656e636869746f2a", "base64");
+        let test4_ans: Vec<Storage> = vec![
+          Storage::new_init("6920e299a5202a6d656e636869746f2a", "base64"),
+          Storage::new_init("fa8807605fa82d0d3ac64e6553b2214f", "base64"),
+          Storage::new_init("cf75838d90ddae80aa1be0e5f9a9c1aa", "base64"),
+          Storage::new_init("180d2f1488d0819422cb6171db62a0db", "base64"),
+          Storage::new_init("baed96ad323d173910f67648cb94d693", "base64"),
+          Storage::new_init("881b4ab2ba265d8baad02bc36144fd50", "base64"),
+          Storage::new_init("b34f195d096944d6a3b96f15c2fd9245", "base64"),
+          Storage::new_init("a7007778ae6933ae0dd05cbbcf2dcefe", "base64"),
+          Storage::new_init("ff8bccf251e2ff5c5c32a3e7931f6d19", "base64"),
+          Storage::new_init("24b7182e7555e77229674495ba78298c", "base64"),
+          Storage::new_init("ae127cdadb479ba8f220df3d4858f6b1", "base64"),
+        ];
+    }
 }

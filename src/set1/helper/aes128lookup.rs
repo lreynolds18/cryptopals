@@ -2,15 +2,17 @@
  * as well as gaussian field mult and affine transformation for inverse byte substitution
  * We ideally want to write this to memory once
  * Using tables from https://en.wikipedia.org/wiki/Rijndael_MixColumns
+ * and https://en.wikipedia.org/wiki/Rijndael_key_schedule#Rcon
  * Parameters: void
  * Return: s_box (Vec<u8>) - 
  *         inverse_s_box (Vec<u8>) -
+ *         rcon (Vec<u8>) - Round constants calculated from Gaussian field
  *         mul_9 (Vec<u8>) - Gaussian field (2^8) of multiplication 9
  *         mul_11 (Vec<u8>) - Gaussian field (2^8) of multiplication 11
  *         mul_13 (Vec<u8>) - Gaussian field (2^8) of multiplication 13
  *         mul_14 (Vec<u8>) - Gaussian field (2^8) of multiplication 14
  */
-pub fn get_aes_128_lookup_tables() -> (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>) {
+pub fn get_aes_128_lookup_tables() -> (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>) {
     let s_box: Vec<u8> = vec![
         0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab,
         0x76, 0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4,
@@ -52,6 +54,8 @@ pub fn get_aes_128_lookup_tables() -> (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u
         0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c,
         0x7d,
     ];
+
+    let rcon: Vec<u8> = vec![0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36];
 
     let mul_9: Vec<u8> = vec![
         0x00, 0x09, 0x12, 0x1b, 0x24, 0x2d, 0x36, 0x3f, 0x48, 0x41, 0x5a, 0x53, 0x6c, 0x65, 0x7e,
@@ -138,5 +142,5 @@ pub fn get_aes_128_lookup_tables() -> (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u
         0x8d,
     ];
 
-    (s_box, inverse_s_box, mul_9, mul_11, mul_13, mul_14)
+    (s_box, inverse_s_box, rcon, mul_9, mul_11, mul_13, mul_14)
 }
