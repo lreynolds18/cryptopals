@@ -121,12 +121,11 @@ pub fn calc_key_expansion_core(key: &Storage, i: usize, s_box: &Vec<u8>, rcon: &
  * Parameters: key (&Storage) - original key
  * Return: vec<Storage> - 11 different keys
  */
-pub fn calc_key_expansion<'a>(mut keys: Vec<&'a Storage>, s_box: &Vec<u8>, rcon: &Vec<u8>) -> Vec<&'a Storage> {
+pub fn calc_key_expansion(keys: &mut Vec<&Storage>, s_box: &Vec<u8>, rcon: &Vec<u8>) {
   for i in 0..10 {
       let key_generated: Storage = calc_key_expansion_core(&keys[i], i+1, s_box, rcon);
       keys.push(&(keys[i] ^ &key_generated));
   }
-  keys
 }
 
 /* add_round_key -- a Round Key is added to the State by a simple
@@ -155,6 +154,7 @@ pub fn add_round_key(state: &Storage, key: &Storage) -> Storage {
  */
 pub fn inv_shift_rows(state: &Storage) -> Storage {
     // assuming we have 16 bytes (128 bits)
+    // TODO: fix this bullshit
     if state.len() != 16 {
         println!("Uh oh");
     }
@@ -233,7 +233,7 @@ pub fn inv_cipher_aes_128(bytes_in: &Storage, key: &Storage) {
     
     let mut keys: Vec<&Storage> = Vec::new();
     keys.push(key);
-    let ans = calc_key_expansion(keys, &s_box, &rcon);
+    calc_key_expansion(&mut keys, &s_box, &rcon);
 
     for i in 0usize..end {
         let mut state = bytes_in.index(i * 16, (i + 1) * 16);
@@ -376,8 +376,10 @@ mod tests {
           Storage::new_init("b1d4d8e28a7db9da1d7bb3de4c664941", "base64"),
           Storage::new_init("b4ef5bcb3e92e21123e951cf6f8f188e", "base64"),
         ];
-        let test1_res = calc_key_expansion(test1_key, &s_box, &rcon);
-        assert_eq!(test1_ans.len(), test2_ans.len());
+        let mut test1_keys: Vec<&Storage> = Vec::new();
+        test1_keys.push(&test1_key);
+        calc_key_expansion(&mut test1_keys, &s_box, &rcon);
+        assert_eq!(test1_keys.len(), test1_ans.len());
         
         let test2_key = Storage::new_init("ffffffffffffffffffffffffffffffff", "base64");
         let test2_ans: Vec<Storage> = vec![
