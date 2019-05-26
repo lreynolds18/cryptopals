@@ -5,7 +5,8 @@ use std::ops;
 // TODO: implement display trait instead of to_string and print
 // TODO: only use Storage {} dec and only use self.data and self.data_type in here
 // TODO: consider to_owned() instead of to_string()
-// TODO: move out set1
+// TODO: move out of set1
+// TODO: add self to parameter list? 
 
 pub struct Storage {
     data: Vec<u8>,
@@ -170,7 +171,7 @@ impl Storage {
     }
 
     /// print -- helper function to print self.data Vec<u8>
-    /// Parameters: void
+    /// Parameters: void 
     /// Return: void
     pub fn print(&self) {
         println!("{}", self.to_string());

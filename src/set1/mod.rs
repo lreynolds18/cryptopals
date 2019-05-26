@@ -5,74 +5,378 @@ use self::storage::Storage;
 use std::f64;
 use std::fs;
 
-// TODO: make a challenge class
+/// Challenge - Struct to display each challenge
+// TODO: implement builder pattern (https://en.wikipedia.org/wiki/Builder_pattern#Rust)
+pub struct Challenge {
+    header: String,
+    input: String,
+    input_file: String,
+    input_type: String,
+    input2: String,
+    input2_type: String,
+    expected_answer: String,
+    expected_type: String,
+    expected_line: i32,
+    expected_size: usize,
+    expected_key: String,
+    expected_key_type: String,
+    actual_answer: String,
+    actual_type: String,
+    actual_key: String,
+    actual_line: i32,
+    actual_size: usize
+}
 
-/// set1challenge1 -- Hex to Base64
+impl Challenge {
+    /// new -- construct for challenge
+    /// Parameters: void 
+    /// Return: Challenge
+    pub fn new() -> Challenge {
+      Challenge {}
+    }
+
+    /// new_init -- basic constructor for challenge 
+    /// Parameters: header (&str)
+    ///             input (&str)
+    ///             input_type (&str)
+    ///             expected_answer (&str)
+    ///             expected_type (&str)
+    /// Return: Challenge
+    pub fn new_init(
+        header: &str,
+        input: &str,
+        input_type: &str,
+        expected_answer: &str,
+        expected_type: &str
+    ) -> Challenge {
+        Challenge {
+            header: header.to_owned(),
+            input: input.to_owned(),
+            input_type: input_type.to_owned(),
+            expected_answer: expected_answer.to_owned(),
+            expected_type: expected_type.to_owned()
+        }
+    }
+
+    /// new_init -- basic constructor for challenge 
+    /// Parameters: header (&str)
+    ///             input (&str)
+    ///             input_type (&str)
+    ///             expected_answer (&str)
+    ///             expected_type (&str)
+    /// Return: Challenge
+    pub fn new_init_file(
+        header: &str,
+        input_file: &str,
+        input_type: &str,
+        expected_answer: &str,
+        expected_type: &str
+    ) -> Challenge {
+        Challenge {
+            header: header.to_owned(),
+            input: input.to_owned(),
+            input_type: input_type.to_owned(),
+            expected_answer: expected_answer.to_owned(),
+            expected_type: expected_type.to_owned()
+        }
+    }
+
+    /// new_init_2inputs -- constructor for challenge w/ two inputs
+    /// Parameters: header (&str)
+    ///             input (&str)
+    ///             input_type (&str)
+    ///             input2 (&str)
+    ///             input2_type (&str)
+    ///             expected_answer (&str)
+    ///             expected_type (&str)
+    /// Return: Challenge
+    pub fn new_init_2inputs(
+        header: &str,
+        input: &str,
+        input_type: &str,
+        input2: &str,
+        input2_type: &str,
+        expected_answer: &str,
+        expected_type: &str
+    ) -> Challenge {
+        Challenge {
+            header: header.to_owned(),
+            input: input.to_owned(),
+            input_type: input_type.to_owned(),
+            input2: input2.to_owned(),
+            input2_type: input2_type.to_owned(),
+            expected_answer: expected_answer.to_owned(),
+            expected_type: expected_type.to_owned()
+        }
+    }
+  
+    /// new_init_decryption -- decryption constructor for challenge 
+    /// Parameters: header (&str)
+    ///             input (&str)
+    ///             input_type (&str)
+    ///             expected_answer (&str)
+    ///             expected_key (&str)
+    /// Return: Challenge
+    pub fn new_init_decryption(
+        header: &str,
+        input: &str,
+        input_type: &str,
+        expected_answer: &str,
+        expected_key: &str,
+    ) -> Challenge {
+        Challenge {
+            header: header.to_owned(),
+            input: input.to_owned(),
+            input_type: input_type.to_owned(),
+            expected_answer: expected_answer.to_owned(),
+            expected_key: expected_key.to_owned()
+        }
+    }
+
+    /// new_init_decryption_line -- decryption constructor for challenge 
+    /// Parameters: header (&str)
+    ///             input (&str)
+    ///             input_type (&str)
+    ///             expected_answer (&str)
+    ///             expected_key (&str)
+    ///             expected_line (i32)
+    /// Return: Challenge
+    pub fn new_init_decryption_line(
+        header: &str,
+        input: &str,
+        input_type: &str,
+        expected_answer: &str,
+        expected_key: &str,
+        expected_line: i32
+    ) -> Challenge {
+        Challenge {
+            header: header.to_owned(),
+            input: input.to_owned(),
+            input_type: input_type.to_owned(),
+            expected_answer: expected_answer.to_owned(),
+            expected_key: expected_key.to_owned(),
+            expected_line: expected_line 
+        }
+    }
+
+    /// new_init_file_decryption_line -- decryption constructor for challenge 
+    /// Parameters: header (&str)
+    ///             input_file (&str)
+    ///             input_type (&str)
+    ///             expected_answer (&str)
+    ///             expected_key (&str)
+    ///             expected_line (i32)
+    /// Return: Challenge
+    pub fn new_init_file_decryption_line(
+        header: &str,
+        input_file: &str,
+        input_type: &str,
+        expected_answer: &str,
+        expected_key: &str,
+        expected_line: i32
+    ) -> Challenge {
+        Challenge {
+            header: header.to_owned(),
+            input_file: input_file.to_owned(),
+            input_type: input_type.to_owned(),
+            expected_answer: expected_answer.to_owned(),
+            expected_key: expected_key.to_owned(),
+            expected_line: expected_line 
+        }
+    }
+
+    /// new_init_file_decryption_size -- decryption constructor for challenge 
+    /// Parameters: header (&str)
+    ///             input_file (&str)
+    ///             input_type (&str)
+    ///             expected_key (&str)
+    ///             expected_size (i32)
+    /// Return: Challenge
+    pub fn new_init_file_decryption_size(
+        header: &str,
+        input_file: &str,
+        input_type: &str,
+        expected_key: &str,
+        expected_size: usize
+    ) -> Challenge {
+        Challenge {
+            header: header.to_owned(),
+            input_file: input_file.to_owned(),
+            input_type: input_type.to_owned(),
+            expected_key: expected_key.to_owned(),
+            expected_size: expected_size
+        }
+    }
+    
+    /// new_init_file_decryption -- constructor for challenge 
+    /// Parameters: header (&str)
+    ///             input_file (&str)
+    ///             input_type (&str)
+    ///             key (&str)
+    ///             key_type(&str)
+    /// Return: Challenge
+    pub fn new_init_file_decryption(
+        header: &str,
+        input: &str,
+        input_type: &str,
+        expected_answer: &str,
+        expected_type: &str
+    ) -> Challenge {
+        Challenge {
+            header: header.to_owned(),
+            input: input.to_owned(),
+            input_type: input_type.to_owned(),
+            expected_answer: expected_answer.to_owned(),
+            expected_type: expected_type.to_owned()
+        }
+    }
+
+    pub fn set_actual_answer_type(&mut self, s: Storage) {
+        self.actual_answer = s.to_string();
+        self.actual_type = s.get_data_type().to_string();
+    }
+
+    pub fn set_actual_answer_key(&mut self, ans: &str, key: &str) {
+        self.actual_answer = ans.to_owned();
+        self.actual_key = key.to_owned();
+    }
+
+    pub fn set_actual_answer_key_line(&mut self, ans: &str, key: &str, line: i32) {
+        self.actual_answer = ans.to_owned();
+        self.actual_key = key.to_owned();
+        self.actual_line = line;
+    }
+
+    pub fn set_actual_answer_key_size(&mut self, ans: &str, key: &str, size: usize) {
+        self.actual_answer = ans.to_owned();
+        self.actual_key = key.to_owned();
+        self.actual_size = size;
+    }
+
+
+    pub fn get_input(&self) -> &str {
+        &self.input
+    }
+
+    pub fn get_input_file(&self) -> &str {
+        &self.input_file
+    }
+
+    pub fn get_input_type(&self) -> &str {
+        &self.input_type
+    }
+
+    pub fn get_input2(&self) -> &str {
+        &self.input2
+    }
+
+    pub fn get_input2_type(&self) -> &str {
+        &self.input2_type
+    }
+    
+    // TODO: move to input2?
+    pub fn get_key(&self) -> &str {
+        &self.expected_key
+    }
+
+    pub fn get_key_type(&self) -> &str {
+        &self.expected_key_type
+    }
+    
+    /// print -- Print out challenge
+    /// Parameters: void
+    /// Return: void
+    pub fn print(&self) {
+        print!("{}", self.header);
+        print!("Input: {}", self.input_type);
+        print!("Input Type: {}", self.input_type);
+        if !self.input2.is_empty() {
+            print!("Input: {}", self.input2_type);
+            print!("Input Type: {}", self.input2_type);
+        }
+        print!("Expected Answer: {}", self.expected_answer);
+        print!("Expected Type: {}", self.expected_type);
+        print!("Actual Answer: {}", self.actual_answer);
+        print!("Actual Type: {}", self.actual_type);
+    }
+}
+
+
+/// challenge1 -- Hex to Base64
 /// http://cryptopals.com/sets/1/challenges/1
 /// Convert Hex to Base64
 /// Always operate on raw bytes, never on encoded strings.
-pub fn set1challenge1() {
+pub fn challenge1() {
     // Definitions
-    let header = "Set 1, Challenge 1 - hex to base64";
-    let input1 = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120\
-         706f69736f6e6f7573206d757368726f6f6d";
-    let input1_type = "hex";
-    let input2 = "";
-    let input2_type = "";
-    let expected_answer = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
-    let expected_type = "base64";
+    let challenge = Challenge::new_init(
+        "Set 1, Challenge 1 - hex to base64",
+        "49276d206b696c6c696e6720796f757220627261696e206c696b65206120\
+         706f69736f6e6f7573206d757368726f6f6d",
+        "hex",
+        "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t",
+        "base64"
+    );
 
     // Work
-    let mut ans = Storage::new_init(input, "hex");
-    ans.change_base("base64");
+    let mut ans = Storage::new_init(challenge.get_input(), challenge.get_input_type());
+    ans.change_base(&challenge.expected_type);
 
     // Output
-    let actual_answer = ans.to_string();
-    let actual_type = ans.get_type();
-
-    pretty_print(header, input1, input1_type, input2, input2_type, expected_answer, expected_type, actual_answer, actual_type);
+    challenge.set_actual_answer_type(ans);
+    challenge.print();
 }
 
-/// set1challenge2 -- Fixed XOR 
+/// challenge2 -- Fixed XOR 
 /// http://cryptopals.com/sets/1/challenges/2
 /// xor on two hex strings
 /// lhs_str (&str) - left hand side input
 /// lhs_type (&str) - left hand side data type (hex/base64)
 /// rhs_str (&str) - right hand side input
 /// rhs_type (&str) - right hand side data type (hex/base64)
-pub fn set1challenge2(lhs_str: &str, lhs_type: &str, rhs_str: &str, rhs_type: &str) {
-    let header = "Set 1, Challenge 2 - fixed XOR";
-    let input1 = "1c0111001f010100061a024b53535009181c";
-    let input1_type = "hex";
-    let input2 = "686974207468652062756c6c277320657965";
-    let input2_type = "hex";
-    let expected_answer = "746865206b696420646f6e277420706c6179";
-    let expected_type = "hex";
+pub fn challenge2() {
+    // Definitions
+    let challenge = Challenge::new_init_2inputs(
+        "Set 1, Challenge 2 - fixed XOR",
+        "1c0111001f010100061a024b53535009181c",
+        "hex",
+        "686974207468652062756c6c277320657965",
+        "hex",
+        "746865206b696420646f6e277420706c6179",
+        "hex"
+    );
 
-    let lhs = Storage::new_init(input1, input1_type);
-    let rhs = Storage::new_init(input2, input2_type);
+    // Work
+    let lhs = Storage::new_init(challenge.get_input(), challenge.get_input_type());
+    let rhs = Storage::new_init(challenge.get_input2(), challenge.get_input2_type());
     let ans = &lhs ^ &rhs;
 
     // Output
-    let actual_answer = ans.to_string();
-    let actual_type = ans.get_type();
+    challenge.set_actual_answer_type(ans);
+    challenge.print();
 }
 
-/// set1challenge3 - Single Byte Xor Cipher
+/// challenge3 - Single Byte Xor Cipher
 /// http://cryptopals.com/sets/1/challenges/3
 /// The hex string has been XOR'd against a single character.
 /// Find the key, decrypt the message.
-/// Parameters: filename(&str) - File to detect single-character XOR
-/// Return: (String, Char) - (hidden message, key that was used)
-pub fn set1challenge3(str_inp: &str, str_type: &str) {
-    let s = Storage::new_init(str_inp, str_type);
-    let freq = helper::freq::get_char_freq_table();
+pub fn challenge3() {
+    // Definitions
+    let challenge = Challenge::new_init_decryption(
+      "Set 1, Challenge 3 - Single-byte XOR cipher",
+      "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736",
+      "hex",
+      "Cooking MC's like a pound of bacon",
+      "X"
+    );
 
+    let s = Storage::new_init(challenge.get_input(), challenge.get_input_type());
+    let freq = helper::freq::get_char_freq_table();
     let mut result_string: String = s.to_string();
     let mut result_char: char = '0';
     let mut max_freq: f32 = 0_f32;
     let mut tmp_freq: f32;
 
+    // Work
     for i in "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".chars() {
         let mut char_obj = storage::Storage::new_init(&i.to_string(), "ascii");
         char_obj.change_base("hex");
@@ -87,27 +391,37 @@ pub fn set1challenge3(str_inp: &str, str_type: &str) {
         }
     }
 
-    (result_string, result_char)
+    // Output
+    challenge.set_actual_answer_key(&result_string, &result_char.to_string());
+    challenge.print();
 }
 
-/// set1challenge4 -- Detect Single Character Xor
+/// challenge4 -- Detect Single Character Xor
 /// http://cryptopals.com/sets/1/challenges/4
 /// One of the 60-character strings in this file has been encrypted by single-character XOR. Find it.
 /// Parameters: filename(&str) - File to detect single-character XOR
 /// Return: (String, char, i32) - (Secret message, key that was used, line number)
-pub fn set1challenge4() {
-    let contents = fs::read_to_string(filename).expect("Error: Unable to read file");
+pub fn challenge4() {
+    // Definitions
+    let challenge = Challenge::new_init_decryption_line(
+        "Set 1, Challenge 4 - Detect single-character XOR",
+        "./input_files/set1challenge4.txt",
+        "hex",
+        "Now that the party is jumping\n",
+        "5",
+        5
+    );
 
+    let contents = fs::read_to_string(challenge.get_input_file()).expect("Error: Unable to read file");
     let file_contents: Vec<Storage> = contents
         .lines()
-        .map(|l| Storage::new_init(l, "hex"))
+        .map(|l| Storage::new_init(l, challenge.get_input_type()))
         .collect();
 
     let char_objs: Vec<Storage> = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
         .chars()
         .map(|c| Storage::new_init(&c.to_string(), "ascii"))
         .collect();
-
     let freq = helper::freq::get_char_freq_table();
 
     // results that are going to be returned
@@ -120,6 +434,7 @@ pub fn set1challenge4() {
     let mut count: i32 = 0; // keep track of line number
     let mut ans: Storage;
 
+    // Work
     for mut fc in file_contents {
         fc.change_base("ascii");
         for co in &char_objs {
@@ -136,29 +451,45 @@ pub fn set1challenge4() {
         count += 1;
     }
 
-    (result_string, result_char, result_num)
+    // Output
+    challenge.set_actual_answer_key_line(&result_string, &result_char.to_string(), result_num);
+    challenge.print();
 }
 
-/// set1challenge5 -- Repeating Key Xor Encrypt
+/// challenge5 -- Repeating Key Xor Encrypt
 /// http://cryptopals.com/sets/1/challenges/5
 /// Parameters: lhs_str (&str) - left hand side input
 ///             lhs_type (&str) - left hand side data type (hex/base64)
 ///             rhs_str (&str) - right hand side input
 ///             rhs_type (&str) - right hand side data type (hex/base64)
 /// Return: String - Encrypted message
-pub fn set1challenge5() {
+pub fn challenge5() {
     // TODO: handle \n -- newlines
-    let lhs = Storage::new_init(lhs_str, lhs_type);
-    let rhs = Storage::new_init(rhs_str, rhs_type);
+    // Definitions
+    let challenge = Challenge::new_init_2inputs(
+        "Set 1, Challenge 5 - repeating-key XOR",
+        "Burning 'em, if you ain't quick and nimble\nI go crazy \
+        when I hear a cymbal",
+        "ascii",
+        "ICE",
+        "ascii",
+        "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a2622\
+         6324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f",
+        "hex"
+    );
+    let lhs = Storage::new_init(challenge.get_input(), challenge.get_input_type());
+    let rhs = Storage::new_init(challenge.get_input2(), challenge.get_input2_type());
 
+    // Work
     let mut ans = &lhs ^ &rhs;
-
     ans.change_base("hex");
 
-    ans.to_string()
+    // Output
+    challenge.set_actual_answer_type(ans);
+    challenge.print();
 }
 
-/// set1challenge6 -- Break Repeating Key Xor
+/// challenge6 -- Break Repeating Key Xor
 /// http://cryptopals.com/sets/1/challenges/6
 /// File has been base64'd after being encrypted with repeating-key XOR.
 /// Algorithm:
@@ -179,10 +510,18 @@ pub fn set1challenge5() {
 ///          the repeating-key XOR key byte for that block. Put them together and you have the key.
 /// Parameters: filename(&str) - File to detect repeating key xor
 /// Return: (String, String, usize) - (Secret message, key that was used, key size)
-pub fn set1challenge6() {
-    let contents = fs::read_to_string(filename).expect("Error: Unable to read file");
+pub fn challenge6() {
+    // Definitions
+    let challenge = Challenge::new_init_file_decryption_size(
+        "Set 1, Challenge 6 - Break repeating-key XOR",
+        "./input_files/set1challenge6.txt",
+        "base64",
+        "Terminator X: Bring the noise",
+        29
+    );
 
-    let mut file_contents = Storage::new_init(&contents.replace("\n", ""), "base64");
+    let contents = fs::read_to_string(challenge.get_input_file()).expect("Error: Unable to read file");
+    let mut file_contents = Storage::new_init(&contents.replace("\n", ""), challenge.get_input_type());
     file_contents.change_base("ascii");
 
     let char_objs: Vec<Storage> =
@@ -193,6 +532,7 @@ pub fn set1challenge6() {
 
     let freq = helper::freq::get_char_freq_table();
 
+    // Work
     // Step 1-4 - Figure out keysize (theoretically we should use a minheap)
     let mut keysize: usize = 0;
     let mut min_nor_dist: f64 = f64::INFINITY; // set as MAX
@@ -242,10 +582,12 @@ pub fn set1challenge6() {
     let key_obj = Storage::new_init(&key_string, "ascii");
     ans = &file_contents ^ &key_obj;
 
-    (ans.to_string(), key_string, keysize)
+    // Output
+    challenge.set_actual_answer_key_size(&ans.to_string(), &key_string, keysize);
+    challenge.print();
 }
 
-/// set1challenge7 -- Decrypt AES 128 ECB
+/// challenge7 -- Decrypt AES 128 ECB
 /// http://cryptopals.com/sets/1/challenges/7
 /// The Base64-encoded content in this file has been encrypted via AES-128 in ECB mode under the key
 /// "YELLOW SUBMARINE". (case-sensitive, without the quotes; exactly 16 characters; I like
@@ -254,14 +596,22 @@ pub fn set1challenge6() {
 /// Parameters: filename (&str) - Input File
 ///             key (&str) - String used to encrypt message
 /// Return: String - Secret message
-pub fn set1challenge7() {
-    let contents = fs::read_to_string(filename).expect("Error: Unable to read file");
-
-    let mut input_storage = Storage::new_init(&contents.replace("\n", ""), "base64");
-    let key_storage = Storage::new_init(key, "ascii");
-
+pub fn challenge7() {
+    // Definitions
+    let challenge = Challenge::new_init_file(
+        "Set 1, Challenge 7 - Decrypt AES-128-ECB given key",
+        "./input_files/set1challenge7.txt",
+        "base64",
+        "YELLOW SUBMARINE",
+        "ascii",
+    );
+    let contents = fs::read_to_string(challenge.get_input_file()).expect("Error: Unable to read file");
+    let mut input_storage = Storage::new_init(&contents.replace("\n", ""), challenge.get_input_type());
     input_storage.change_base("ascii");
+    let key_storage = Storage::new_init(challenge.get_key(), challenge.get_key_type());
 
+    // Work
     helper::inv_cipher_aes_128(&input_storage, &key_storage);
-    "".to_string()
+
+    // Output
 }

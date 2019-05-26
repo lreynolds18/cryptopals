@@ -1,127 +1,44 @@
+extern crate clap;
+use clap::{Arg, App};
+
 pub mod set1;
 
-fn set1challenge1() {
-  let header = "Set 1, Challenge 1 - hex to base64";
-  let input = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120\
-         706f69736f6e6f7573206d757368726f6f6d";
-  let expected_answer = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
-  let expected_type = "base64";
-  let actual_answer = ;
-  let actual_type = ;
-}
-
-fn pritty_print(header: &str, input: &str, expected_answer: &str,
-                expected_type: &str, actual_answer: &str, actual_type: &str) {
-
-}
-
 fn main() {
-    // TODO: refactor.  All of this could be a function
+    let matches = App::new("Cryptopals")
+        .version("0.1.0")
+        .author("Lucas Reynolds <lreynolds18@gmail.com>")
+        .about("My 48 exercises that demonstrate attacks on real-world crypto in Rust")
+        .arg(Arg::with_name("set")
+                 .short("s")
+                 .long("set")
+                 .takes_value(true)
+                 .help("Which set should run"))
+        .arg(Arg::with_name("challenge")
+                 .short("c")
+                 .long("challenge")
+                 .takes_value(true)
+                 .help("Which challenge should run"))
+        .get_matches();
 
-    // Set 1, Challenge 1
-    println!("Set 1, Challenge 1 - hex to base64");
-    println!(
-        "Input: 49276d206b696c6c696e6720796f757220627261696e206c696b65206120\
-         706f69736f6e6f7573206d757368726f6f6d"
-    );
+    let set = matches
+      .value_of("set").expect("Please include a challenge number.")
+      .parse::<i32>().expect("Please make sure challenge is a number!");
 
-    println!("Ans: SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t");
-    println!(
-        "Res: {}",
-        set1::hex_to_base64(
-            "49276d206b696c6c696e6720796f75722062\
-             7261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
-        )
-    );
+    let challenge = matches
+      .value_of("challenge").expect("Please include a challenge number.")
+      .parse::<i32>().expect("Please make sure challenge is a number!");
 
-    println!();
-
-    // Set 1, Challenge 2
-    println!("Set 1, Challenge 2 - fixed XOR");
-    println!("Input: 1c0111001f010100061a024b53535009181c");
-    println!("Input: 686974207468652062756c6c277320657965");
-    println!("Ans: 746865206b696420646f6e277420706c6179");
-    println!(
-        "Res: {}",
-        set1::fixed_xor(
-            "1c0111001f010100061a024b53535009181c",
-            "hex",
-            "686974207468652062756c6c277320657965",
-            "hex"
-        )
-    );
-
-    println!();
-
-    // Set 1, Challenge 3
-    println!("Set 1, Challenge 3 - Single-byte XOR cipher");
-    println!("Input: 1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736");
-    let (ans_message3, ans_key3) = set1::single_byte_xor_cipher(
-        "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736",
-        "hex",
-    );
-
-    println!("Ans message: Cooking MC's like a pound of bacon");
-    println!("Res message: {}", ans_message3);
-    println!("Ans key: X");
-    println!("Res key: {}", ans_key3);
-    println!();
-
-    // Set 1, Challenge 4
-    println!("Set 1, Challenge 4 - Detect single-character XOR");
-    println!("Input File: ./input_files/set1challenge4.txt");
-    let (ans_message4, ans_key4, ans_line4) =
-        set1::detect_single_character_xor("./input_files/set1challenge4.txt");
-
-    print!("Ans message: Now that the party is jumping\n");
-    print!("Res message: {}", ans_message4);
-    println!("Ans key: 5");
-    println!("Res key: {}", ans_key4);
-    println!("Ans line: 5");
-    println!("Res line: {}", ans_line4);
-    println!();
-
-    // Set 1, Challenge 5
-    println!("Set 1, Challenge 5 - repeating-key XOR");
-    println!(
-        "Input String: Burning 'em, if you ain't quick and nimble\nI go craz\
-         y when I hear a cymbal"
-    );
-    println!("Input key: ICE");
-    println!(
-        "Ans: 0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a2622\
-         6324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f"
-    );
-    println!(
-        "Res: {}",
-        set1::repeating_key_xor_encrypt(
-            "Burning 'em, if you ain't \
-             quick and nimble\nI go crazy when I hear a cymbal",
-            "ascii",
-            "ICE",
-            "ascii"
-        )
-    );
-    println!();
-
-    // Set 1, Challenge 6
-    println!("Set 1, Challenge 6 - Break repeating-key XOR");
-    println!("Input File: ./input_files/set1challenge6.txt");
-    let (ans_message6, ans_key6, ans_keysize6) =
-        set1::break_repeating_key_xor("./input_files/set1challenge6.txt");
-
-    println!("Res message: {}", ans_message6);
-    println!("Ans key: Terminator X: Bring the noise");
-    println!("Res key: {}", ans_key6);
-    println!("Ans keysize: 29");
-    println!("Res keysize: {}", ans_keysize6);
-    println!();
-
-    // Set 1, Challenge 7
-    println!("Set 1, Challenge 7 - Decrypt AES-128-ECB given key");
-    println!("Input File: ./input_files/set1challenge7.txt");
-    let ans_message7 =
-        set1::decrypt_aes_128_ecb("./input_files/set1challenge7.txt", "YELLOW SUBMARINE");
-    println!("Res message: {}", ans_message7);
-    println!();
+    match set {
+        1 => match challenge {
+            1 => set1::challenge1(),
+            2 => set1::challenge2(),
+            3 => set1::challenge3(),
+            4 => set1::challenge4(),
+            5 => set1::challenge5(),
+            6 => set1::challenge6(),
+            7 => set1::challenge7(),
+            _ => println!("Please include a valid challenge! {}", challenge)
+        },
+        _ => println!("Please include a valid set! {}", set)
+    }
 }
