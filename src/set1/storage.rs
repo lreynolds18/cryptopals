@@ -5,6 +5,7 @@ use std::ops;
 // TODO: implement display trait instead of to_string and print
 // TODO: only use Storage {} dec and only use self.data and self.data_type in here
 // TODO: consider to_owned() instead of to_string()
+// TODO: move out set1
 
 pub struct Storage {
     data: Vec<u8>,
@@ -12,10 +13,9 @@ pub struct Storage {
 }
 
 impl Storage {
-    /* new -- empty constructor for storage
-     * Parameters: void
-     * Return: Storage (w/ data and data_type)
-     */
+    /// new -- empty constructor for storage
+    /// Parameters: void
+    /// Return: Storage (w/ data and data_type)
     pub fn new() -> Storage {
         Storage {
             data: Vec::new(),
@@ -23,13 +23,12 @@ impl Storage {
         }
     }
 
-    /* new_init -- constructor for storage
-     * converts string to vec<u8>
-     * assuming str_inp is in it's respected format of data_type (hex, base64, or ascii)
-     * Parameters: str_inp (&str) - input string,
-     *             data_type (&str) - data type of input string (hex, base64, or ascii)
-     * Return: Storage (w/ data and data_type)
-     */
+    /// new_init -- constructor for storage
+    /// converts string to vec<u8>
+    /// assuming str_inp is in it's respected format of data_type (hex, base64, or ascii)
+    /// Parameters: str_inp (&str) - input string,
+    ///             data_type (&str) - data type of input string (hex, base64, or ascii)
+    /// Return: Storage (w/ data and data_type)
     pub fn new_init(str_inp: &str, data_type: &str) -> Storage {
         Storage {
             data: Storage::build_data(str_inp, data_type),
@@ -37,11 +36,10 @@ impl Storage {
         }
     }
 
-    /* new_init_vec -- constructor for storage
-     * Parameters: vec_inp (&vec) - input vector,
-     *             data_type (&str) - data type of input string (hex, base64, or ascii)
-     * Return: Storage (w/ data and data_type)
-     */
+    /// new_init_vec -- constructor for storage
+    /// Parameters: vec_inp (&vec) - input vector,
+    ///             data_type (&str) - data type of input string (hex, base64, or ascii)
+    /// Return: Storage (w/ data and data_type)
     pub fn new_init_vec(vec_inp: &Vec<u8>, data_type: &str) -> Storage {
         Storage {
             data: vec_inp.to_vec(),
@@ -49,11 +47,10 @@ impl Storage {
         }
     }
 
-    /* build_data -- helper function to build self.data
-     * Parameters: str_inp (&str) - input string,
-     *             data_type (&str) - data type of input string (hex or base64)
-     * Return: self.data (Vec<u8>) - vector representation of our str_inp
-     */
+    /// build_data -- helper function to build self.data
+    /// Parameters: str_inp (&str) - input string,
+    ///            data_type (&str) - data type of input string (hex or base64)
+    /// Return: self.data (Vec<u8>) - vector representation of our str_inp
     fn build_data(str_inp: &str, data_type: &str) -> Vec<u8> {
         if data_type != "hex" && data_type != "base64" && data_type != "ascii" {
             panic!("Error: invalid type ({})", data_type);
@@ -65,59 +62,53 @@ impl Storage {
             .collect()
     }
 
-    /* set_data -- helper function to set self.data and self.data_type
-     * Parameters: str_inp (&str) - input string,
-     *             data_type (&str) - data type of input string (hex or base64)
-     * Return: void
-     */
+    /// set_data -- helper function to set self.data and self.data_type
+    /// Parameters: str_inp (&str) - input string,
+    ///             data_type (&str) - data type of input string (hex or base64)
+    /// Return: void
     pub fn set_data(&mut self, str_inp: &str, data_type: &str) {
         self.data = Storage::build_data(str_inp, data_type);
         self.data_type = String::from(data_type);
     }
 
-    /* set_data_vec -- helper function to set self.data and self.data_type
-     * Parameters: str_inp (&str) - input string,
-     *             data_type (&str) - data type of input string (hex or base64)
-     * Return: void
-     */
+    /// set_data_vec -- helper function to set self.data and self.data_type
+    /// Parameters: str_inp (&str) - input string,
+    ///             data_type (&str) - data type of input string (hex or base64)
+    /// Return: void
     pub fn set_data_vec(&mut self, vec_inp: &Vec<u8>, data_type: &str) {
         self.data = vec_inp.to_vec();
         self.data_type = data_type.to_string();
     }
 
-    /* get_data -- helper function to get self.data
-     * Parameters: void
-     * Return: self.data (Vec<u8>) - data in vector format
-     */
+    /// get_data -- helper function to get self.data
+    /// Parameters: void
+    /// Return: self.data (Vec<u8>) - data in vector format
     pub fn get_data(&self) -> &Vec<u8> {
         &self.data
     }
 
-    /* get_data_type -- helper function to get self.data_type
-     * Parameters: void
-     * Return: self.data_type (&str) - data_typ
-     */
+    /// get_data_type -- helper function to get self.data_type
+    /// Parameters: void
+    /// Return: self.data_type (&str) - data_typ
     pub fn get_data_type(&self) -> &String {
         &self.data_type
     }
 
-    /* len -- helper function to get self.data.len()
-     * Parameters: void
-     * Return: self.data.len() (usize) - length of data
-     */
+    /// len -- helper function to get self.data.len()
+    /// Parameters: void
+    /// Return: self.data.len() (usize) - length of data
     pub fn len(&self) -> usize {
         self.data.len()
     }
 
-    /* char_to_u8 -- helper function to convert (hex/base64) char to u8
-     *               (note: we don't want self here because we want to be able to use this
-     *               outside of this struct / want to use this in constructor)
-     * Parameters: c (char) - Character between (0-9, A-F, a-f) or (A-Z, a-z, 0-9, +, /)
-     *             data_type (&str) - base of the char to convert to
-     * Return: u (u8) - binary representation of character (0000-1111) or (000000-111111)
-     */
-    // TODO: refactor into char_to_hex, char_to_base64, char_to_ascii
+    /// char_to_u8 -- helper function to convert (hex/base64) char to u8
+    ///               (note: we don't want self here because we want to be able to use this
+    ///               outside of this struct / want to use this in constructor)
+    /// Parameters: c (char) - Character between (0-9, A-F, a-f) or (A-Z, a-z, 0-9, +, /)
+    ///             data_type (&str) - base of the char to convert to
+    /// Return: u (u8) - binary representation of character (0000-1111) or (000000-111111)
     pub fn char_to_u8(c: char, data_type: &str) -> u8 {
+        // TODO: refactor into char_to_hex, char_to_base64, char_to_ascii
         let u = c as u8;
         // change to one match statement
         if data_type == "hex" {
@@ -145,15 +136,14 @@ impl Storage {
         }
     }
 
-    /* u8_to_char -- helper function to convert (hex/base64) u8 to char
-     *               (note: we don't want self here because we want to be able to use this
-     *               outside of this struct / want to use this in constructor)
-     * Parameters: u (u8) - binary representation of character (0000-1111) or (000000-111111)
-     *             data_type (&str) - base of the char to convert to
-     * Return: u (u8) - Character between (0-9, a-f) or (A-Z, a-z, 0-9, +, /)
-     */
-    // TODO: refactor into multiple functions.
+    /// u8_to_char -- helper function to convert (hex/base64) u8 to char
+    ///               (note: we don't want self here because we want to be able to use this
+    ///               outside of this struct / want to use this in constructor)
+    /// Parameters: u (u8) - binary representation of character (0000-1111) or (000000-111111)
+    ///             data_type (&str) - base of the char to convert to
+    /// Return: u (u8) - Character between (0-9, a-f) or (A-Z, a-z, 0-9, +, /)
     pub fn u8_to_char(u: u8, data_type: &str) -> char {
+        // TODO: refactor into multiple functions.
         // change to one match statement
         if data_type == "hex" {
             // HEX
@@ -179,18 +169,16 @@ impl Storage {
         }
     }
 
-    /* print -- helper function to print self.data Vec<u8>
-     * Parameters: void
-     * Return: void
-     */
+    /// print -- helper function to print self.data Vec<u8>
+    /// Parameters: void
+    /// Return: void
     pub fn print(&self) {
         println!("{}", self.to_string());
     }
 
-    /* to_string -- helper function to convert self.data Vec<u8> to string
-     * Parameters: void
-     * Return: out (String) - Hex/Base64/Ascii data in string format
-     */
+    /// to_string -- helper function to convert self.data Vec<u8> to string
+    /// Parameters: void
+    /// Return: out (String) - Hex/Base64/Ascii data in string format
     pub fn to_string(&self) -> String {
         self.data
             .iter()
@@ -198,13 +186,12 @@ impl Storage {
             .collect()
     }
 
-    /* change_base -- convert old_base to new_init_base
-     * handles hex -> base64, base64 -> hex, ascii -> hex, hex -> ascii,
-     * ascii -> base64, base64 -> ascii
-     * changes self.data and self.data_type in struct
-     * Parameters: new_init_base (&str) - New base to convert old base to
-     * Return: void
-     */
+    /// change_base -- convert old_base to new_init_base
+    /// handles hex -> base64, base64 -> hex, ascii -> hex, hex -> ascii,
+    /// ascii -> base64, base64 -> ascii
+    /// changes self.data and self.data_type in struct
+    /// Parameters: new_init_base (&str) - New base to convert old base to
+    /// Return: void
     pub fn change_base(&mut self, new_init_base: &str) {
         // TODO: REFACTOR
         // this is gross
@@ -405,12 +392,11 @@ impl Storage {
         }
     }
 
-    /* index -- returns a storage that contains the elements inside of the range.
-     * Parameters: left (usize) - starting index (starting element included)
-     *             right (usize) - ending index (ending element not included)
-     * Return: Storage - Storage containing the data of the previous storage
-     * in range of the two indices
-     */
+    /// index -- returns a storage that contains the elements inside of the range.
+    /// Parameters: left (usize) - starting index (starting element included)
+    ///             right (usize) - ending index (ending element not included)
+    /// Return: Storage - Storage containing the data of the previous storage
+    ///         in range of the two indices
     pub fn index(&self, left: usize, right: usize) -> Storage {
         if left >= self.data.len() {
             panic!("Error: left index must be in range of data");
@@ -429,11 +415,12 @@ impl Storage {
     }
 }
 
-// XOR implementation for Storage ^ Storage = Storage
-// handles repeating XOR so if lhs is bigger than rhs
-// it will repeatable XOR the rhs on the lhs
-// we want to always pass references
+/// XOR implementation for Storage ^ Storage = Storage
+/// handles repeating XOR so if lhs is bigger than rhs
+///  it will repeatable XOR the rhs on the lhs
+/// we want to always pass references
 impl<'a> ops::BitXor<&'a Storage> for &'a Storage {
+    // TODO: rethink types here -- do we always want a reference?
     type Output = Storage;
 
     fn bitxor(self, rhs: &Storage) -> Storage {

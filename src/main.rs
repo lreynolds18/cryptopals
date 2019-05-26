@@ -1,5 +1,20 @@
 pub mod set1;
 
+fn set1challenge1() {
+  let header = "Set 1, Challenge 1 - hex to base64";
+  let input = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120\
+         706f69736f6e6f7573206d757368726f6f6d";
+  let expected_answer = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
+  let expected_type = "base64";
+  let actual_answer = ;
+  let actual_type = ;
+}
+
+fn pritty_print(header: &str, input: &str, expected_answer: &str,
+                expected_type: &str, actual_answer: &str, actual_type: &str) {
+
+}
+
 fn main() {
     // TODO: refactor.  All of this could be a function
 

@@ -4,13 +4,12 @@ use set1::storage::Storage;
 
 use std::collections::HashMap; // hashmap used in char_freq, inv_sub_bytes
 
-// helper functions used in set 1
+/// helper functions used in set 1
 
-/* hamming_distance-- helper function to calculate the hamming distance between two storages
- * Parameters: lhs (&Storage) - left hand side storage,
- *             rhs (&Storage) - rigth hand side storage
- * Return: out (i32) - number of bits that are different between the two storages
- */
+/// hamming_distance-- helper function to calculate the hamming distance between two storages
+/// Parameters: lhs (&Storage) - left hand side storage,
+///             rhs (&Storage) - rigth hand side storage
+/// Return: out (i32) - number of bits that are different between the two storages
 pub fn hamming_distance(lhs: &Storage, rhs: &Storage) -> i32 {
     if lhs.get_data().len() != rhs.get_data().len() {
         panic!(
@@ -56,11 +55,10 @@ pub fn hamming_distance(lhs: &Storage, rhs: &Storage) -> i32 {
         .sum()
 }
 
-/* char_freq -- helper function that returns the character frequency
- * Using frequencies from http://www.fitaly.com/board/domper3/posts/136.html
- * Parameters: str_inp (&str) - input string (ascii)
- * Return: f64 - character frequency score
- */
+/// char_freq -- helper function that returns the character frequency
+/// Using frequencies from http://www.fitaly.com/board/domper3/posts/136.html
+/// Parameters: str_inp (&str) - input string (ascii)
+///  Return: f64 - character frequency score
 pub fn char_freq(str_inp: &str, freq: &HashMap<u8, f32>) -> f32 {
     str_inp
         .chars()
@@ -71,10 +69,9 @@ pub fn char_freq(str_inp: &str, freq: &HashMap<u8, f32>) -> f32 {
         .sum()
 }
 
-/* split_into_blocks -- splits a storage into keysizes and then splits each keysize into blocks
- * Parameters: keysize (usize) - Number of characters that we want to split by
- * Return: out Vec<Storage> - Vector of Storage where each Storage contains the nth elements in each keysize
- */
+/// split_into_blocks -- splits a storage into keysizes and then splits each keysize into blocks
+/// Parameters: keysize (usize) - Number of characters that we want to split by
+/// Return: out Vec<Storage> - Vector of Storage where each Storage contains the nth elements in each keysize
 pub fn split_into_blocks(s: &Storage, keysize: usize) -> Vec<Storage> {
     // create an empty Vec<Vec<u8>> with the length of keysize
     let mut holder: Vec<String> = (0..keysize).map(|_| String::new()).collect();
@@ -93,9 +90,7 @@ pub fn split_into_blocks(s: &Storage, keysize: usize) -> Vec<Storage> {
     holder.iter().map(|v| Storage::new_init(v, dt)).collect()
 }
 
-/* calc_key_expansion_core --
- *
- */
+/// calc_key_expansion_core -- TODO: finish
 pub fn calc_key_expansion_core(key: &Storage, i: usize, s_box: &Vec<u8>, rcon: &Vec<u8>) -> Storage {
 
   // 1. Rotate left (example - [12, 62, 54, 126] -> [62, 54, 126, 12])
@@ -116,11 +111,10 @@ pub fn calc_key_expansion_core(key: &Storage, i: usize, s_box: &Vec<u8>, rcon: &
   temp 
 }
 
-/* calc_key_expansion -- calculate key expansion using algorithm
- * expands a 16 byte keys into 11 different 16 byte keys
- * Parameters: key (&Storage) - original key
- * Return: vec<Storage> - 11 different keys
- */
+/// calc_key_expansion -- calculate key expansion using algorithm
+/// expands a 16 byte keys into 11 different 16 byte keys
+/// Parameters: key (&Storage) - original key
+/// Return: vec<Storage> - 11 different keys
 pub fn calc_key_expansion(keys: &mut Vec<&Storage>, s_box: &Vec<u8>, rcon: &Vec<u8>) {
   for i in 0..10 {
       let key_generated: Storage = calc_key_expansion_core(&keys[i], i+1, s_box, rcon);
@@ -128,30 +122,28 @@ pub fn calc_key_expansion(keys: &mut Vec<&Storage>, s_box: &Vec<u8>, rcon: &Vec<
   }
 }
 
-/* add_round_key -- a Round Key is added to the State by a simple
- * bitwise XOR operation
- * Parameters: state (Storage) - Encrypted objected to decrypt
- *             key (&Storage) - Key used to encrypt object
- * Return: state Storage - Bytes after AES decryption
- */
+/// add_round_key -- a Round Key is added to the State by a simple
+/// bitwise XOR operation
+/// Parameters: state (Storage) - Encrypted objected to decrypt
+///             key (&Storage) - Key used to encrypt object
+/// Return: state Storage - Bytes after AES decryption
 pub fn add_round_key(state: &Storage, key: &Storage) -> Storage {
     state ^ key
 }
 
-/* inv_shift_rows -- inv shift to the right
- * shift the first column 0 to the right
- * shift the second column 1 to the right
- * shift the third column 2 to the right
- * shift the fourth column 3 to the right
- *
- *  B0  B4  B8 B12       B0  B4  B8 B12
- *  B1  B5  B9 B13  --> B13  B1  B5  B9
- *  B2  B6 B10 B14  --> B10 B14  B2  B6
- *  B3  B7 B11 B15       B7 B11 B15  B3
- *
- * Parameters: bytes_in (Storage) - Encrypted objected to decrypt
- * Return: state Storage - Bytes after AES decryption
- */
+/// inv_shift_rows -- inv shift to the right
+/// shift the first column 0 to the right
+/// shift the second column 1 to the right
+/// shift the third column 2 to the right
+/// shift the fourth column 3 to the right
+///
+///  B0  B4  B8 B12       B0  B4  B8 B12
+///  B1  B5  B9 B13  --> B13  B1  B5  B9
+///  B2  B6 B10 B14  --> B10 B14  B2  B6
+///  B3  B7 B11 B15       B7 B11 B15  B3
+///
+/// Parameters: bytes_in (Storage) - Encrypted objected to decrypt
+/// Return: state Storage - Bytes after AES decryption
 pub fn inv_shift_rows(state: &Storage) -> Storage {
     // assuming we have 16 bytes (128 bits)
     // TODO: fix this bullshit
@@ -168,10 +160,9 @@ pub fn inv_shift_rows(state: &Storage) -> Storage {
     Storage::new_init_vec(&d, state.get_data_type())
 }
 
-/* inv_sub_bytes -- subsitute bytes based on Inverse S-Box
- * Parameters: state (Storage) - Encrypted objected to decrypt
- * Return: state Storage - Bytes after AES decryption
- */
+/// inv_sub_bytes -- subsitute bytes based on Inverse S-Box
+/// Parameters: state (Storage) - Encrypted objected to decrypt
+/// Return: state Storage - Bytes after AES decryption
 pub fn inv_sub_bytes(state: &Storage, inverse_s_box: &Vec<u8>) -> Storage {
     Storage::new_init_vec(
         &state
@@ -183,20 +174,19 @@ pub fn inv_sub_bytes(state: &Storage, inverse_s_box: &Vec<u8>) -> Storage {
     )
 }
 
-/* inv_mix_columns -- Reverse MixCol by multiplying by a^-1
- * a^-1 = [0e 0b 0d 09] [S_0,c]
- *        [09 0e 0b 0d] [s_1,c]
- *        [0d 09 0e 0b] [s_2,c]
- *        [0b 0d 09 0e] [s_3,c]
- * 09 - mul_9, 0b - mul_11, 0d - mul_13, 0e - mul_14
- * option 1 is implementing gaussian field 2^8 for mul_9, mul_11, mul_13, mul_14
- * option 2 is implementing gaussian field 2^8 for mul_2 and then doing mul_9 = x*9 = (((x×2)×2)×2)+x
- * option 3 is using lookup tables
- *
- * Parameters: bytes_in (Storage) - Encrypted objected to decrypt
- *             key (&str) - Key used to encrypt object
- * Return: state Storage - Bytes after AES decryption
- */
+/// inv_mix_columns -- Reverse MixCol by multiplying by a^-1
+/// a^-1 = [0e 0b 0d 09] [S_0,c]
+///        [09 0e 0b 0d] [s_1,c]
+///        [0d 09 0e 0b] [s_2,c]
+///        [0b 0d 09 0e] [s_3,c]
+/// 09 - mul_9, 0b - mul_11, 0d - mul_13, 0e - mul_14
+/// option 1 is implementing gaussian field 2^8 for mul_9, mul_11, mul_13, mul_14
+/// option 2 is implementing gaussian field 2^8 for mul_2 and then doing mul_9 = x*9 = (((x×2)×2)×2)+x
+/// option 3 is using lookup tables
+///
+/// Parameters: bytes_in (Storage) - Encrypted objected to decrypt
+///             key (&str) - Key used to encrypt object
+/// Return: state Storage - Bytes after AES decryption
 pub fn inv_mix_columns(
     state: &Storage,
     mul_9: &Vec<u8>,
@@ -204,6 +194,7 @@ pub fn inv_mix_columns(
     mul_13: &Vec<u8>,
     mul_14: &Vec<u8>,
 ) -> Storage {
+    // TODO: figure out this length thing : prob check at beginning?
     // assuming that d len is 16
     let d = state.get_data();
     let mut out = Vec::new();
@@ -218,11 +209,10 @@ pub fn inv_mix_columns(
     Storage::new_init_vec(&out, state.get_data_type())
 }
 
-/* inv_cipher_aes_128 -- AES decyption algorithm
- * Parameters: bytes_in (Storage) - Encrypted objected to decrypt
- *             key (&str) - Key used to encrypt object
- * Return: state Storage - Bytes after AES decryption
- */
+/// inv_cipher_aes_128 -- AES decyption algorithm
+/// Parameters: bytes_in (Storage) - Encrypted objected to decrypt
+///             key (&str) - Key used to encrypt object
+/// Return: state Storage - Bytes after AES decryption
 pub fn inv_cipher_aes_128(bytes_in: &Storage, key: &Storage) {
     if bytes_in.len() % 16 != 0 {
         panic!("Error: the length of bytes_in must be divisible by 16");
