@@ -1,6 +1,6 @@
 pub mod aes128lookup;
 pub mod freq;
-use set1::storage::Storage;
+use storage::Storage;
 
 use std::collections::HashMap; // hashmap used in char_freq, inv_sub_bytes
 

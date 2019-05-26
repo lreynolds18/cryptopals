@@ -2,6 +2,8 @@ extern crate clap;
 use clap::{Arg, App};
 
 pub mod set1;
+pub mod storage;
+pub mod challenge;
 
 fn main() {
     let matches = App::new("Cryptopals")
