@@ -187,6 +187,13 @@ impl Storage {
             .collect()
     }
 
+    /// to_str -- helper function to convert self.data Vec<u8> to &str
+    /// Parameters: void
+    /// Return: out (String) - Hex/Base64/Ascii data in &str format
+    pub fn to_str(&self) -> &str {
+        &self.to_string()
+    }
+
     /// change_base -- convert old_base to new_init_base
     /// handles hex -> base64, base64 -> hex, ascii -> hex, hex -> ascii,
     /// ascii -> base64, base64 -> ascii
